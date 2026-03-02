@@ -95,7 +95,33 @@
   },
   "footer": {
     "copyright": "Copyright © 2026 Brand • Alle rechten voorbehouden",
-    "title": "cryptoi"
+    "title": "cryptoi",
+    "privacy": "Privacybeleid"
+  },
+  "cookieConsent": {
+    "title": "Cookie toestemming",
+    "message": "We gebruiken analytics om de site te verbeteren (IP, locatie, apparaat). Door te accepteren gaat u akkoord met ons",
+    "privacyLink": "Privacybeleid",
+    "accept": "Accepteren",
+    "decline": "Weigeren"
+  },
+  "privacy": {
+    "title": "Privacybeleid",
+    "lastUpdated": "Laatst bijgewerkt: maart 2026",
+    "analyticsHeading": "Analytics en gebruik",
+    "analyticsBody": "We verzamelen anonieme gebruiksgegevens om de dienst te verbeteren. Dit omvat:",
+    "analyticsIp": "IP-adres (alleen voor land/regio)",
+    "analyticsLocation": "Geschatte locatie (land/regio uit IP)",
+    "analyticsDevice": "Apparaattype (bv. mobiel, tablet, desktop)",
+    "analyticsBrowser": "Browser en besturingssysteem",
+    "analyticsVisitTime": "Bezoeksduur en bekeken pagina's",
+    "cookiesHeading": "Cookies",
+    "cookiesBody": "We gebruiken een cookie om uw toestemming voor analytics te onthouden. Er wordt pas getrackt als u accepteert.",
+    "storageHeading": "Gegevensopslag",
+    "storageBody": "Analytics worden alleen in geheugen (Redis) bewaard. Geaggregeerde statistieken worden niet aan derden verkocht.",
+    "choicesHeading": "Uw keuze",
+    "choicesBody": "U kunt analytics accepteren of weigeren bij de melding. U kunt uw keuze wijzigen door cookies te wissen.",
+    "backHome": "Terug naar home"
   }
 }
 

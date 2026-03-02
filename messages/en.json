@@ -96,7 +96,33 @@
   },
   "footer": {
     "copyright": "Copyright © 2026 Brand • All Rights Reserved",
-    "title": "cryptoi"
+    "title": "cryptoi",
+    "privacy": "Privacy Policy"
+  },
+  "cookieConsent": {
+    "title": "Cookie consent",
+    "message": "We use analytics to improve the site (IP, location, device). By accepting you agree to our",
+    "privacyLink": "Privacy Policy",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: March 2026",
+    "analyticsHeading": "Analytics & usage data",
+    "analyticsBody": "We collect anonymous usage data to improve the service. This includes:",
+    "analyticsIp": "IP address (used to infer country/region only)",
+    "analyticsLocation": "Approximate location (country/region from IP)",
+    "analyticsDevice": "Device type (e.g. mobile, tablet, desktop)",
+    "analyticsBrowser": "Browser and operating system",
+    "analyticsVisitTime": "Visit duration and pages viewed",
+    "cookiesHeading": "Cookies",
+    "cookiesBody": "We use a cookie to remember your analytics consent (accept or decline). No tracking runs until you accept.",
+    "storageHeading": "Data storage",
+    "storageBody": "Analytics data is stored in memory (Redis) only, not in a permanent database. Aggregated stats are used for product improvement and are not sold to third parties.",
+    "choicesHeading": "Your choices",
+    "choicesBody": "You can accept or decline analytics when prompted. You can change your choice by clearing cookies or visiting this page.",
+    "backHome": "Back to home"
   }
 }
 

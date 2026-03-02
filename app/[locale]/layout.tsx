@@ -1,9 +1,10 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
-import Script from 'next/script';
 import { routing } from '@/i18n/routing';
 import Providers from '@/app/providers';
+import CookieConsent from '@/app/components/CookieConsent';
+import AnalyticsTracker from '@/app/components/AnalyticsTracker';
 import { getServerAuth } from '@/lib/server-api';
 import { Geist, Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
 import "../globals.css";
@@ -55,32 +56,15 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale}>
-      <head>
-        {/* Privacy-friendly analytics by Plausible */}
-        <Script
-          async
-          src="https://plausible.io/js/pa-EAVyHTsweqBrpuInh7zNJ.js"
-          strategy="afterInteractive"
-        />
-        <Script
-          id="plausible-init"
-          strategy="afterInteractive"
-        >{`
-          window.plausible = window.plausible || function() {
-            (plausible.q = plausible.q || []).push(arguments)
-          };
-          plausible.init = plausible.init || function(opts) {
-            plausible.o = opts || {};
-          };
-          plausible.init();
-        `}</Script>
-      </head>
+      <head />
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <Providers initialAuth={initialAuth}>
           <NextIntlClientProvider messages={messages}>
             {children}
+            <CookieConsent />
+            <AnalyticsTracker />
           </NextIntlClientProvider>
         </Providers>
       </body>

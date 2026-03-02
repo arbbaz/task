@@ -95,7 +95,33 @@
   },
   "footer": {
     "copyright": "Copyright © 2026 Brand • Alle Rechte vorbehalten",
-    "title": "cryptoi"
+    "title": "cryptoi",
+    "privacy": "Datenschutz"
+  },
+  "cookieConsent": {
+    "title": "Cookie-Einwilligung",
+    "message": "Wir nutzen Analysen zur Verbesserung der Seite (IP, Standort, Gerät). Mit Akzeptieren stimmen Sie unserer",
+    "privacyLink": "Datenschutzerklärung",
+    "accept": "Akzeptieren",
+    "decline": "Ablehnen"
+  },
+  "privacy": {
+    "title": "Datenschutzerklärung",
+    "lastUpdated": "Zuletzt aktualisiert: März 2026",
+    "analyticsHeading": "Analysen & Nutzungsdaten",
+    "analyticsBody": "Wir erfassen anonyme Nutzungsdaten zur Verbesserung des Dienstes. Dazu gehören:",
+    "analyticsIp": "IP-Adresse (nur zur Ermittlung von Land/Region)",
+    "analyticsLocation": "Ungefährer Standort (Land/Region aus IP)",
+    "analyticsDevice": "Gerätetyp (z. B. Mobil, Tablet, Desktop)",
+    "analyticsBrowser": "Browser und Betriebssystem",
+    "analyticsVisitTime": "Besuchsdauer und angesehene Seiten",
+    "cookiesHeading": "Cookies",
+    "cookiesBody": "Wir verwenden ein Cookie, um Ihre Einwilligung zur Analyse zu speichern. Es wird erst getrackt, wenn Sie zustimmen.",
+    "storageHeading": "Datenspeicherung",
+    "storageBody": "Analysedaten werden nur im Speicher (Redis) gehalten, nicht dauerhaft. Aggregierte Statistiken dienen der Verbesserung und werden nicht an Dritte verkauft.",
+    "choicesHeading": "Ihre Wahl",
+    "choicesBody": "Sie können Analysen beim Hinweis akzeptieren oder ablehnen. Sie können Ihre Wahl ändern, indem Sie Cookies löschen.",
+    "backHome": "Zurück zur Startseite"
   }
 }
 
