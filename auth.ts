@@ -3,7 +3,7 @@ import type { NextAuthOptions } from 'next-auth';
 import { getBackendUrl } from './lib/env';
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: 'jwt',
   },

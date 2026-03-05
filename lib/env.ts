@@ -1,7 +1,6 @@
 /**
  * Backend API URL. Never commit production URLs; use env only.
- * - Server (auth, API routes): API_URL or NEXT_PUBLIC_API_URL
- * - Client: NEXT_PUBLIC_API_URL only (no default localhost)
+ * Uses NEXT_PUBLIC_API_URL for both server and client.
  */
 
 function isProduction(): boolean {
@@ -11,20 +10,18 @@ function isProduction(): boolean {
 /** For server-side code (e.g. auth.ts). In production, throws if no URL is set. */
 export function getBackendUrl(): string {
   const raw =
-    typeof process !== "undefined"
-      ? (process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL)
-      : undefined;
+    typeof process !== "undefined" ? process.env.NEXT_PUBLIC_API_URL : undefined;
   const url = typeof raw === "string" ? raw : "";
   const trimmed = url.replace(/\/$/, "");
   if (isProduction() && !trimmed) {
     throw new Error(
-      "API_URL or NEXT_PUBLIC_API_URL must be set in production. Do not commit production URLs."
+      "NEXT_PUBLIC_API_URL must be set in production. Do not commit production URLs."
     );
   }
   return trimmed;
 }
 
-/** For client-side API calls. No default; set NEXT_PUBLIC_API_URL in .env for dev. */
+/** For client-side API calls. Set NEXT_PUBLIC_API_URL in .env for dev. */
 export function getApiBaseUrl(): string {
   if (typeof process === "undefined") return "";
   const raw = process.env.NEXT_PUBLIC_API_URL;
