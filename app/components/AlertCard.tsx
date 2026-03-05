@@ -52,10 +52,9 @@ export default function AlertCard({ alert, index }: AlertCardProps) {
             <span className="font-normal break-words">{getTranslatedReports()}</span>
           </>
         ) : (
-          <span className="font-normal opacity-90 break-words">{alert.content}</span>
+          <span className="font-normal opacity-90 break-words min-h-[18px] inline-block">{alert.content}</span>
         )}
       </div>
     </div>
   );
 }
-

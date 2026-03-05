@@ -12,16 +12,7 @@ import { truncateWithEllipsis } from "../utils/textUtils";
 export default function LeftSidebar() {
   const t = useTranslations();
   const [activeItem, setActiveItem] = useState<string | null>(null);
-  const [sidebarAlerts, setSidebarAlerts] = useState(() =>
-    alerts.map((item) =>
-      item.type === "trending"
-        ? {
-            ...item,
-            content: "",
-          }
-        : item
-    )
-  );
+  const [sidebarAlerts, setSidebarAlerts] = useState(alerts);
 
   const sidebarMenuTranslations: Record<string, string> = {
     "Exchanges": t('sidebar.exchanges'),
@@ -37,6 +28,14 @@ export default function LeftSidebar() {
 
   useEffect(() => {
     let isMounted = true;
+    let timerId: number | ReturnType<typeof setTimeout> | null = null;
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (
+        callback: () => void,
+        options?: { timeout: number }
+      ) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
 
     const loadTrending = async () => {
       const response = await trendingApi.get({ period: 'week', limit: 1 });
@@ -70,10 +69,29 @@ export default function LeftSidebar() {
       );
     };
 
-    void loadTrending();
+    if (typeof idleWindow.requestIdleCallback === "function") {
+      const id = idleWindow.requestIdleCallback(() => {
+        void loadTrending();
+      }, { timeout: 1200 });
+      timerId = id;
+    } else {
+      timerId = globalThis.setTimeout(() => {
+        void loadTrending();
+      }, 400);
+    }
 
     return () => {
       isMounted = false;
+      if (timerId != null) {
+        if (
+          typeof timerId === "number" &&
+          typeof idleWindow.cancelIdleCallback === "function"
+        ) {
+          idleWindow.cancelIdleCallback(timerId);
+        } else {
+          globalThis.clearTimeout(timerId);
+        }
+      }
     };
   }, []);
 

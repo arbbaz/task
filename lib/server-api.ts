@@ -1,5 +1,6 @@
 import { getBackendUrl } from "./env";
 import type { Review, UserProfile } from "./types";
+import { hasLikelyAuthCookie } from "./authCookies";
 
 export interface ServerAuthResult {
   isLoggedIn: boolean;
@@ -50,6 +51,7 @@ export async function getServerReviews(options?: {
   const base = getBackendUrl();
   if (!base) return { reviews: [] };
   const limit = options?.limit ?? 20;
+  const hasAuthContext = hasLikelyAuthCookie(options?.cookieHeader);
   try {
     const url = `${base}/api/reviews?status=APPROVED&limit=${limit}`;
     const headers: HeadersInit = {};
@@ -58,7 +60,9 @@ export async function getServerReviews(options?: {
     }
     const res = await fetch(url, {
       headers,
-      cache: "no-store",
+      ...(hasAuthContext
+        ? { cache: "no-store" as const }
+        : { next: { revalidate: 30 } }),
     });
     if (!res.ok) {
       return { reviews: [] };

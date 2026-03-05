@@ -6,18 +6,9 @@ import Providers from '@/app/providers';
 import CookieConsent from '@/app/components/CookieConsent';
 import AnalyticsTracker from '@/app/components/AnalyticsTracker';
 import { getServerAuth } from '@/lib/server-api';
-import { Geist, Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
+import { hasLikelyAuthCookie } from '@/lib/authCookies';
+import { Inter, Space_Grotesk } from "next/font/google";
 import "../globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const inter = Inter({
   variable: "--font-inter",
@@ -52,13 +43,15 @@ export default async function LocaleLayout({
 
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
-  const initialAuth = await getServerAuth(cookieHeader);
+  const initialAuth = hasLikelyAuthCookie(cookieHeader)
+    ? await getServerAuth(cookieHeader)
+    : { isLoggedIn: false, user: null };
 
   return (
     <html lang={locale}>
       <head />
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${spaceGrotesk.variable} antialiased`}
+        className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <Providers initialAuth={initialAuth}>
           <NextIntlClientProvider messages={messages}>

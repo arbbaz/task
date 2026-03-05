@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useTranslations } from 'next-intl';
 import { signIn, useSession } from "next-auth/react";
-import { helpMenuItems } from "../data/constants";
+import { helpMenuItems, topRatedCards } from "../data/constants";
 import Separator from "./Separator";
 import TopRatedCard from "./TopRatedCard";
 import Toast from "./Toast";
@@ -42,7 +42,15 @@ export default function RightSidebar() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-  const [dynamicTopRatedCards, setDynamicTopRatedCards] = useState<TopRatedCardData[]>([]);
+  const [dynamicTopRatedCards, setDynamicTopRatedCards] = useState<TopRatedCardData[]>(() =>
+    topRatedCards.slice(0, 2).map((card) => ({
+      title: card.title,
+      product: {
+        ...card.product,
+        hasVerify: card.product.hasVerify,
+      },
+    }))
+  );
   const isAuthenticated = isLoggedIn || status === "authenticated";
 
   const helpMenuTranslations = [
@@ -153,6 +161,14 @@ export default function RightSidebar() {
 
   useEffect(() => {
     let isMounted = true;
+    let timerId: number | ReturnType<typeof setTimeout> | null = null;
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (
+        callback: () => void,
+        options?: { timeout: number }
+      ) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
 
     const loadTopRated = async () => {
       const response = await trendingApi.get({ period: 'week', limit: 2 });
@@ -160,7 +176,6 @@ export default function RightSidebar() {
         return;
       }
       if (response.error || !response.data?.topRatedThisWeek?.length) {
-        setDynamicTopRatedCards([]);
         return;
       }
 
@@ -186,10 +201,29 @@ export default function RightSidebar() {
       setDynamicTopRatedCards(cards);
     };
 
-    void loadTopRated();
+    if (typeof idleWindow.requestIdleCallback === "function") {
+      const id = idleWindow.requestIdleCallback(() => {
+        void loadTopRated();
+      }, { timeout: 1400 });
+      timerId = id;
+    } else {
+      timerId = globalThis.setTimeout(() => {
+        void loadTopRated();
+      }, 450);
+    }
 
     return () => {
       isMounted = false;
+      if (timerId != null) {
+        if (
+          typeof timerId === "number" &&
+          typeof idleWindow.cancelIdleCallback === "function"
+        ) {
+          idleWindow.cancelIdleCallback(timerId);
+        } else {
+          globalThis.clearTimeout(timerId);
+        }
+      }
     };
   }, []);
 

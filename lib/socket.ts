@@ -5,6 +5,15 @@ import { io, Socket } from 'socket.io-client';
 import { useEffect, useState } from 'react';
 
 let socketInstance: Socket | null = null;
+const isDev = process.env.NODE_ENV !== 'production';
+
+function debugLog(...args: unknown[]) {
+  if (isDev) console.log(...args);
+}
+
+function debugError(...args: unknown[]) {
+  if (isDev) console.error(...args);
+}
 
 export function getSocket(): Socket | null {
   if (typeof window === 'undefined') {
@@ -15,7 +24,7 @@ export function getSocket(): Socket | null {
     const socketUrl =
       process.env.NEXT_PUBLIC_SOCKET_URL ||
       window.location.origin;
-    console.log('🔌 Initializing socket connection to:', socketUrl);
+    debugLog('🔌 Initializing socket connection to:', socketUrl);
     socketInstance = io(socketUrl, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
@@ -30,31 +39,31 @@ export function getSocket(): Socket | null {
 
     // Set up global connection handlers
     socketInstance.on('connect', () => {
-      console.log('✅ Socket connected, ID:', socketInstance?.id);
+      debugLog('✅ Socket connected, ID:', socketInstance?.id);
     });
 
     socketInstance.on('disconnect', (reason) => {
-      console.log('❌ Socket disconnected, reason:', reason);
+      debugLog('❌ Socket disconnected, reason:', reason);
     });
 
     socketInstance.on('connect_error', (error) => {
-      console.error('❌ Socket connection error:', error);
+      debugError('❌ Socket connection error:', error);
     });
 
     socketInstance.on('reconnect', (attemptNumber) => {
-      console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
+      debugLog('🔄 Socket reconnected after', attemptNumber, 'attempts');
     });
 
     socketInstance.on('reconnect_attempt', (attemptNumber) => {
-      console.log('🔄 Reconnection attempt', attemptNumber);
+      debugLog('🔄 Reconnection attempt', attemptNumber);
     });
 
     socketInstance.on('reconnect_error', (error) => {
-      console.error('❌ Reconnection error:', error);
+      debugError('❌ Reconnection error:', error);
     });
 
     socketInstance.on('reconnect_failed', () => {
-      console.error('❌ Reconnection failed');
+      debugError('❌ Reconnection failed');
     });
   }
 
@@ -74,12 +83,12 @@ export function useSocket() {
 
     // Update connection state
     const handleConnect = () => {
-      console.log('✅ useSocket: Socket connected, ID:', socket?.id);
+      debugLog('✅ useSocket: Socket connected, ID:', socket?.id);
       setIsConnected(true);
     };
 
     const handleDisconnect = (reason: string) => {
-      console.log('❌ useSocket: Socket disconnected, reason:', reason);
+      debugLog('❌ useSocket: Socket disconnected, reason:', reason);
       setIsConnected(false);
     };
 

@@ -28,7 +28,7 @@ export default function TopRatedCard({ card, index }: TopRatedCardProps) {
   const t = useTranslations();
 
   return (
-    <div className={`rounded-t-md mb-8 rounded-b-md border border-border-light text-white overflow-hidden ${index === 0 ? 'bg-dark-bg' : 'bg-white'}`}>
+    <div className={`rounded-t-md mb-8 rounded-b-md border border-border-light text-white overflow-hidden min-h-[248px] ${index === 0 ? 'bg-dark-bg' : 'bg-white'}`}>
       <div className="flex items-center justify-between px-4 py-5 bg-dark-bg">
         <h3 className="text-sm font-semibold">{t('topRated.topRatedThisWeek')}</h3>
       </div>
@@ -66,4 +66,3 @@ export default function TopRatedCard({ card, index }: TopRatedCardProps) {
     </div>
   );
 }
-
