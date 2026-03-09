@@ -19,6 +19,11 @@ export function getAnalyticsConsent(): boolean | null {
 export function setAnalyticsConsent(accepted: boolean): void {
   if (typeof document === "undefined") return;
   document.cookie = `${COOKIE_NAME}=${accepted}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("analytics:consent_changed", { detail: { consent: accepted } })
+    );
+  }
 }
 
 export default function CookieConsent() {

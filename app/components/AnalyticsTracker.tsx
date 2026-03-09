@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getAnalyticsConsent } from "./CookieConsent";
 import { getApiBaseUrl } from "@/lib/env";
@@ -79,9 +79,20 @@ export function trackAnalyticsEvent(event: FunnelEvent, extras?: { path?: string
 
 export default function AnalyticsTracker() {
   const pathname = usePathname();
+  const [consentVersion, setConsentVersion] = useState(0);
   const sessionIdRef = useRef<string | null>(null);
   const currentPathRef = useRef<string>("");
   const enteredAtRef = useRef<string>("");
+
+  useEffect(() => {
+    const onConsentChanged = () => {
+      setConsentVersion((value) => value + 1);
+    };
+    window.addEventListener("analytics:consent_changed", onConsentChanged);
+    return () => {
+      window.removeEventListener("analytics:consent_changed", onConsentChanged);
+    };
+  }, []);
 
   useEffect(() => {
     if (getAnalyticsConsent() !== true) return;
@@ -167,7 +178,7 @@ export default function AnalyticsTracker() {
       window.removeEventListener("pagehide", handlePageHide);
       window.removeEventListener("analytics:funnel_event", handleFunnelEvent);
     };
-  }, [pathname]);
+  }, [pathname, consentVersion]);
 
   return null;
 }

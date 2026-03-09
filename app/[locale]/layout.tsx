@@ -7,18 +7,7 @@ import CookieConsent from '@/app/components/CookieConsent';
 import AnalyticsTracker from '@/app/components/AnalyticsTracker';
 import { getServerAuth } from '@/lib/server-api';
 import { hasLikelyAuthCookie } from '@/lib/authCookies';
-import { Inter, Space_Grotesk } from "next/font/google";
 import "../globals.css";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-});
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -51,7 +40,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <head />
       <body
-        className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
+        className="antialiased"
       >
         <Providers initialAuth={initialAuth}>
           <NextIntlClientProvider messages={messages}>
