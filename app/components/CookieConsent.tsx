@@ -26,9 +26,13 @@ export function setAnalyticsConsent(accepted: boolean): void {
   }
 }
 
-export default function CookieConsent() {
+interface CookieConsentProps {
+  initialConsent?: boolean | null;
+}
+
+export default function CookieConsent({ initialConsent = null }: CookieConsentProps) {
   const t = useTranslations("cookieConsent");
-  const [visible, setVisible] = useState(() => getAnalyticsConsent() === null);
+  const [visible, setVisible] = useState(initialConsent === null);
 
   const handleAccept = () => {
     setAnalyticsConsent(true);

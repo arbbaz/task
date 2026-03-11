@@ -12,7 +12,9 @@ export default function NotificationsClient() {
   const t = useTranslations();
   const router = useRouter();
   const { isLoggedIn } = useAuth();
-  const { notifications, unreadCount, loading, markRead, markAllRead } = useNotifications(isLoggedIn);
+  const { notifications, unreadCount, loading, markRead, markAllRead } = useNotifications(isLoggedIn, {
+    strategy: "immediate",
+  });
 
   if (!isLoggedIn) {
     router.replace("/");

@@ -1,8 +1,15 @@
+import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import Footer from "@/features/layout/components/Footer";
 import Header from "@/features/header/components/Header";
-import LeftSidebar from "@/features/layout/components/LeftSidebar";
-import RightSidebar from "@/features/layout/components/RightSidebar";
+
+const LeftSidebar = dynamic(() => import("@/features/layout/components/LeftSidebar"), {
+  loading: () => <aside className="sidebar-left sidebar-border-right hidden lg:block lg:min-w-[250px]" aria-hidden />,
+});
+
+const RightSidebar = dynamic(() => import("@/features/layout/components/RightSidebar"), {
+  loading: () => <aside className="sidebar-border-left hidden lg:block lg:min-w-[340px]" aria-hidden />,
+});
 
 interface AppShellProps {
   children: ReactNode;

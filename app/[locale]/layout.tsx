@@ -32,15 +32,18 @@ export default async function LocaleLayout({
 
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
+  const analyticsConsentValue = cookieStore.get("analytics_consent")?.value;
   const initialAuth = hasLikelyAuthCookie(cookieHeader)
     ? await getServerAuth(cookieHeader)
     : { isLoggedIn: false, user: null };
+  const initialAnalyticsConsent =
+    analyticsConsentValue === "true" ? true : analyticsConsentValue === "false" ? false : null;
 
   return (
     <Providers initialAuth={initialAuth}>
       <NextIntlClientProvider messages={messages}>
         {children}
-        <CookieConsent />
+        <CookieConsent initialConsent={initialAnalyticsConsent} />
         <AnalyticsTracker />
       </NextIntlClientProvider>
     </Providers>

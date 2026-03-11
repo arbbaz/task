@@ -14,9 +14,12 @@ interface NotificationsMenuProps {
 
 export default function NotificationsMenu({ displayName, enabled }: NotificationsMenuProps) {
   const t = useTranslations();
-  const { status: pushStatus, register, isRegistering } = usePushSubscription(enabled);
-  const { notifications, unreadCount, loading, markRead, markAllRead } = useNotifications(enabled, 25);
   const [isOpen, setIsOpen] = useState(false);
+  const { status: pushStatus, register, isRegistering } = usePushSubscription(enabled && isOpen);
+  const { notifications, unreadCount, loading, markRead, markAllRead } = useNotifications(enabled, {
+    maxItems: 25,
+    strategy: "idle",
+  });
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
