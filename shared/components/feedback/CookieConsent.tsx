@@ -32,7 +32,10 @@ interface CookieConsentProps {
 
 export default function CookieConsent({ initialConsent = null }: CookieConsentProps) {
   const t = useTranslations("cookieConsent");
-  const [visible, setVisible] = useState(initialConsent === null);
+  const [visible, setVisible] = useState(() => {
+    const consent = initialConsent ?? getAnalyticsConsent();
+    return consent === null;
+  });
 
   const handleAccept = () => {
     setAnalyticsConsent(true);
