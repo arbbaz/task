@@ -3,15 +3,25 @@ import type { PaginatedData } from "@/lib/api/core";
 import { fetchApi } from "@/lib/api/core";
 
 export const reviewsApi = {
-  list: async (params?: { page?: number; limit?: number; category?: string; companyId?: string; status?: string }) => {
+  list: async (params?: {
+    page?: number;
+    limit?: number;
+    category?: string;
+    companyId?: string;
+    status?: string;
+    username?: string;
+  }) => {
     const query = new URLSearchParams();
     if (params?.page) query.set("page", params.page.toString());
     if (params?.limit) query.set("limit", params.limit.toString());
     if (params?.category) query.set("category", params.category);
     if (params?.companyId) query.set("companyId", params.companyId);
     if (params?.status) query.set("status", params.status);
+    if (params?.username) query.set("username", params.username);
 
-    return fetchApi<{ reviews: Review[]; pagination: PaginatedData<Review>["pagination"] }>(`/reviews?${query.toString()}`);
+    return fetchApi<{ reviews: Review[]; pagination: PaginatedData<Review>["pagination"] }>(
+      `/reviews?${query.toString()}`
+    );
   },
 
   get: async (id: string) => fetchApi<Review>(`/reviews/${id}`),

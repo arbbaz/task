@@ -77,6 +77,33 @@ export async function getServerReviews(options?: {
   }
 }
 
+export interface UserProfileResponse {
+  user: UserProfile & { createdAt?: string };
+  stats: { followersCount: number; followingCount: number; postsCount: number; complaintsCount: number };
+  viewerState: { isFollowing: boolean };
+}
+
+/**
+ * Server-only: fetch public user profile for metadata/SEO.
+ * Does not require auth.
+ */
+export async function getServerUserProfile(username: string): Promise<{
+  user: (UserProfile & { createdAt?: string }) | null;
+}> {
+  const base = getBackendUrl();
+  if (!base) return { user: null };
+  try {
+    const res = await fetch(`${base}/api/users/${encodeURIComponent(username)}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return { user: null };
+    const data = (await res.json()) as UserProfileResponse;
+    return { user: data?.user ?? null };
+  } catch {
+    return { user: null };
+  }
+}
+
 export interface ServerComplaintsResult {
   complaints: Complaint[];
 }
