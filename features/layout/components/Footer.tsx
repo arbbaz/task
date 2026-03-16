@@ -8,7 +8,9 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-border-separator pb-0 pt-8 sm:pt-16 text-center w-full">
-      <div className="footer-inner">{t("footer.title")}</div>
+      <Link href="/" className="footer-inner block hover:opacity-90 transition-opacity">
+        {t("footer.title")}
+      </Link>
       <p className="footer-legal">
         {t("footer.copyright")}
         {" · "}

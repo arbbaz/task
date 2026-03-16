@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { trackAnalyticsEvent } from "@/shared/components/analytics/AnalyticsTracker";
 import HeaderSearch from "@/features/header/components/HeaderSearch";
@@ -14,7 +15,9 @@ export default function Header() {
   return (
     <header className="w-full overflow-visible border-b border-border">
       <div className="header-inner overflow-visible">
-        <div className="header-brand">{t("header.title")}</div>
+        <Link href="/" className="header-brand hover:opacity-90 transition-opacity">
+          {t("header.title")}
+        </Link>
         <HeaderSearch />
         {isLoggedIn ? (
           <NotificationsMenu displayName={displayName} enabled={isLoggedIn} />
