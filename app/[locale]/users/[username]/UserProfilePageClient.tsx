@@ -43,6 +43,8 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
     reviewsPagination,
     complaintsPagination,
     loading,
+    loadingReviews,
+    loadingComplaints,
     loadingMoreReviews,
     loadingMoreComplaints,
     toggleFollow,
@@ -224,6 +226,7 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                     reviewsPagination.page < reviewsPagination.totalPages,
                 )
               }
+              loading={loadingReviews}
               loadingMore={loadingMoreReviews}
               onLoadMore={loadMoreReviews}
               onVoteUpdate={updateReviewVote}
@@ -252,6 +255,7 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                     complaintsPagination.page < complaintsPagination.totalPages,
                 )
               }
+              loading={loadingComplaints}
               loadingMore={loadingMoreComplaints}
               onLoadMore={loadMoreComplaints}
             />

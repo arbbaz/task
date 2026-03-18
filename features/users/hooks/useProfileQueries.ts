@@ -166,6 +166,13 @@ export function useProfileQueries(
     profileQuery.isLoading ||
     (profileQuery.isFetching && !profileQuery.data);
 
+  const loadingReviews =
+    reviewsInfinite.isLoading ||
+    (reviewsInfinite.isFetching && !reviewsInfinite.data);
+  const loadingComplaints =
+    complaintsInfinite.isLoading ||
+    (complaintsInfinite.isFetching && !complaintsInfinite.data);
+
   const toggleFollow = useCallback(() => {
     if (!user) return;
     followMutation.mutate({
@@ -247,6 +254,8 @@ export function useProfileQueries(
     reviewsPagination,
     complaintsPagination,
     loading,
+    loadingReviews,
+    loadingComplaints,
     loadingMoreReviews: reviewsInfinite.isFetchingNextPage,
     loadingMoreComplaints: complaintsInfinite.isFetchingNextPage,
     refetchProfile: profileQuery.refetch,

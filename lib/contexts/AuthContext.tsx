@@ -36,6 +36,7 @@ interface AuthContextValue {
   isLoggedIn: boolean;
   user: UserProfile | null;
   refreshAuth: () => Promise<void>;
+  isAuthLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -128,6 +129,7 @@ export function AuthProvider({
         isLoggedIn: resolvedAuth.isLoggedIn,
         user: resolvedAuth.user,
         refreshAuth,
+        isAuthLoading: status === "loading",
       }}
     >
       {children}

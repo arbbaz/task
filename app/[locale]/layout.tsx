@@ -6,6 +6,8 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import ServerProviders from '@/app/ServerProviders';
 import DeferredExtras from '@/app/[locale]/DeferredExtras';
+import RouteTransitionProvider from "@/shared/components/animations/RouteTransitionProvider";
+import RouteProgress from "@/shared/components/animations/RouteProgress";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -59,7 +61,8 @@ export default async function LocaleLayout({
   return (
     <ServerProviders>
       <NextIntlClientProvider messages={messages}>
-        {children}
+        <RouteProgress />
+        <RouteTransitionProvider>{children}</RouteTransitionProvider>
         <DeferredExtras initialAnalyticsConsent={initialAnalyticsConsent} />
       </NextIntlClientProvider>
     </ServerProviders>
