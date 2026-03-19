@@ -12,11 +12,13 @@ export function useComplaintsFeed(initialComplaints?: Complaint[]) {
   const [loading, setLoading] = useState(initialComplaints == null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const pageRef = useRef(initialComplaints?.length ? 1 : 0);
   const { showToast } = useToast();
 
   const fetchComplaints = useCallback(async () => {
     setLoading(true);
+    setErrorMessage(null);
     pageRef.current = 0;
     try {
       const response = await complaintsApi.list({ limit: PAGE_SIZE, page: 1 });
@@ -26,7 +28,9 @@ export function useComplaintsFeed(initialComplaints?: Complaint[]) {
         setHasMore(pag ? pag.page < pag.totalPages : false);
         pageRef.current = 1;
       } else if (response.error) {
-        showToast(safeApiMessage(response.error), "error");
+        const message = safeApiMessage(response.error);
+        setErrorMessage(message);
+        showToast(message, "error");
       }
     } finally {
       setLoading(false);
@@ -45,6 +49,7 @@ export function useComplaintsFeed(initialComplaints?: Complaint[]) {
         const pag = data.pagination;
         setHasMore(pag ? pag.page < pag.totalPages : false);
         pageRef.current = nextPage;
+        setErrorMessage(null);
       } else {
         setHasMore(false);
       }
@@ -65,5 +70,14 @@ export function useComplaintsFeed(initialComplaints?: Complaint[]) {
     }
   }, [fetchComplaints, initialComplaints]);
 
-  return { complaints, setComplaints, loading, loadingMore, hasMore, loadMore, fetchComplaints };
+  return {
+    complaints,
+    setComplaints,
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    fetchComplaints,
+    errorMessage,
+  };
 }

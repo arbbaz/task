@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import { LuDot } from "react-icons/lu";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -17,6 +16,7 @@ import ReviewScore from "@/features/reviews/components/ReviewScore";
 import { formatReviewTimeAgo, translateWithFallback } from "@/features/reviews/utils/reviewFormatting";
 import { reviewsApi } from "@/features/reviews/api/client";
 import { useVote } from "@/shared/hooks/useVote";
+import { DotIcon } from "@/shared/components/ui/Icons";
 import type { Review } from "@/lib/types";
 
 interface ReviewCardProps {
@@ -162,9 +162,9 @@ export default function ReviewCard({
             <button type="button" onClick={handleToggleComments} className="action-btn-strong">
               {commentCount} {t("common.review.comments")}
             </button>
-            <LuDot className="inline-block text-sm font-bold text-text-dark" />
+            <DotIcon className="inline-block h-4 w-4 text-text-dark" />
             <button type="button" className="action-btn">{t("common.review.share")}</button>
-            <LuDot className="inline-block text-sm font-bold text-text-dark" />
+            <DotIcon className="inline-block h-4 w-4 text-text-dark" />
             <button type="button" className="action-btn">{t("common.review.report")}</button>
           </div>
 
@@ -205,7 +205,7 @@ export default function ReviewCard({
             </div>
           )}
         </div>
-        <Image src="/verify.svg" alt="" width={16} height={16} className="flex-shrink-0" />
+        <Image src="/verify.svg" alt="" width={16} height={16} sizes="16px" className="h-4 w-4 flex-shrink-0" />
       </div>
     </article>
   );

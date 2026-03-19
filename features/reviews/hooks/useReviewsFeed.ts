@@ -16,11 +16,13 @@ export function useReviewsFeed(initialReviewsFromServer?: Review[]) {
   const [loading, setLoading] = useState(initialReviewsFromServer == null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const pageRef = useRef(initialReviewsFromServer?.length ? 1 : 0);
   const { showToast } = useToast();
 
   const fetchReviews = useCallback(async () => {
     setLoading(true);
+    setErrorMessage(null);
     pageRef.current = 0;
     try {
       const response = await reviewsApi.list({ status: "APPROVED", limit: PAGE_SIZE, page: 1 });
@@ -30,7 +32,9 @@ export function useReviewsFeed(initialReviewsFromServer?: Review[]) {
         setHasMore(pag ? pag.page < pag.totalPages : false);
         pageRef.current = 1;
       } else if (response.error) {
-        showToast(safeApiMessage(response.error), "error");
+        const message = safeApiMessage(response.error);
+        setErrorMessage(message);
+        showToast(message, "error");
       }
     } finally {
       setLoading(false);
@@ -49,6 +53,7 @@ export function useReviewsFeed(initialReviewsFromServer?: Review[]) {
         const pag = data.pagination;
         setHasMore(pag ? pag.page < pag.totalPages : false);
         pageRef.current = nextPage;
+        setErrorMessage(null);
       } else {
         setHasMore(false);
       }
@@ -88,5 +93,15 @@ export function useReviewsFeed(initialReviewsFromServer?: Review[]) {
     }
   }, [fetchReviews, initialReviewsFromServer]);
 
-  return { reviews, setReviews, loading, loadingMore, hasMore, loadMore, fetchReviews, updateReviewVote };
+  return {
+    reviews,
+    setReviews,
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    fetchReviews,
+    updateReviewVote,
+    errorMessage,
+  };
 }

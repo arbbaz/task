@@ -10,12 +10,9 @@ export interface SidebarTopRatedCard {
     score: string;
     reviews: string;
     companies: string;
-    badge: { text: string; color: string };
+    badge: { text: string; tone: "primary" | "accent" | "warning" };
     description: string;
-    bgColor: string;
-    textColor: string;
-    scoreColor: string;
-    separatorColor: string;
+    theme: "dark" | "light";
     hasVerify?: boolean;
   };
 }
@@ -38,13 +35,10 @@ export function useTopRatedCards() {
       companies: "1",
       badge:
         index === 0
-          ? { text: "Rising", color: "bg-accent-blue" }
-          : { text: "New", color: "bg-alert-orange-light" },
+          ? { text: "Rising", tone: "accent" }
+          : { text: "New", tone: "warning" },
       description: truncateWithEllipsis(item.description || item.name, 92),
-      bgColor: index === 0 ? "bg-dark-card" : "bg-card-purple-light-bg",
-      textColor: index === 0 ? "text-white" : "text-text-dark",
-      scoreColor: index === 0 ? "text-emerald" : "text-primary-light",
-      separatorColor: index === 0 ? "bg-border-gray" : "bg-card-purple-light-border",
+      theme: index === 0 ? "dark" : "light",
       hasVerify: index === 1,
     },
   }));

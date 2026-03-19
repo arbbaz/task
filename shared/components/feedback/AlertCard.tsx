@@ -1,7 +1,7 @@
 "use client";
 
-import { AiOutlineMore } from "react-icons/ai";
 import { useTranslations } from 'next-intl';
+import { MoreHorizontalIcon } from "@/shared/components/ui/Icons";
 
 interface AlertCardProps {
   alert: {
@@ -43,7 +43,7 @@ export default function AlertCard({ alert, index }: AlertCardProps) {
       <div className={`${alert.height} rounded-md ${alert.bgColor} ${alert.padding} text-xs font-semibold ${alert.textColor}`}>
         <div className="flex justify-between items-start gap-2">
           <span className="break-words flex-1">{getTranslatedTitle()}</span>
-          <AiOutlineMore className="inline-block text-sm flex-shrink-0" />
+          <MoreHorizontalIcon className="inline-block h-4 w-4 flex-shrink-0" />
         </div>
         {alert.hasScore ? (
           <>

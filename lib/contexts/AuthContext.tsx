@@ -90,17 +90,32 @@ export function AuthProvider({
     if (status !== "unauthenticated" || hasResolvedFallback) return;
 
     let cancelled = false;
+    const idleWindow = globalThis as typeof globalThis & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    let idleId: number | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     const run = () => {
       if (cancelled) return;
       void fetchFallbackAuth();
     };
 
-    const handle = globalThis.setTimeout(run, 0);
+    if (typeof idleWindow.requestIdleCallback === "function") {
+      idleId = idleWindow.requestIdleCallback(run, { timeout: 1500 });
+    } else {
+      timeoutId = globalThis.setTimeout(run, 900);
+    }
 
     return () => {
       cancelled = true;
-      globalThis.clearTimeout(handle);
+      if (idleId !== null && typeof idleWindow.cancelIdleCallback === "function") {
+        idleWindow.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        globalThis.clearTimeout(timeoutId);
+      }
     };
   }, [status, hasResolvedFallback, fetchFallbackAuth]);
 

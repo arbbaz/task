@@ -1,7 +1,7 @@
 "use client";
 
-import { IoMdArrowDown, IoMdArrowUp } from "react-icons/io";
 import type { VoteType } from "@/lib/types";
+import { ArrowDownIcon, ArrowUpIcon } from "@/shared/components/ui/Icons";
 
 function getVoteButtonClass(isActive: boolean): string {
   return `vote-btn ${isActive ? "vote-btn-active" : "vote-btn-idle"} vote-btn-ready`;
@@ -50,7 +50,10 @@ export default function VoteRail({
         className={getVoteButtonClass(userVote === "UP")}
         aria-label="Vote up"
       >
-        <IoMdArrowUp color="#00885E" size={size} className={userVote === "UP" ? "drop-shadow-md" : ""} />
+        <ArrowUpIcon
+          className={userVote === "UP" ? "drop-shadow-md" : undefined}
+          style={{ color: "#00885E", width: size, height: size }}
+        />
       </button>
       <span className={classes.count}>{helpfulCount}</span>
       <button
@@ -59,7 +62,10 @@ export default function VoteRail({
         className={getVoteButtonClass(userVote === "DOWN")}
         aria-label="Vote down"
       >
-        <IoMdArrowDown color="#EA580C" size={size} className={userVote === "DOWN" ? "drop-shadow-md" : ""} />
+        <ArrowDownIcon
+          className={userVote === "DOWN" ? "drop-shadow-md" : undefined}
+          style={{ color: "#EA580C", width: size, height: size }}
+        />
       </button>
       <span className={classes.countDown}>{downVoteCount}</span>
     </div>

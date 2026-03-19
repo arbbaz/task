@@ -1,12 +1,23 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { trackAnalyticsEvent } from "@/shared/components/analytics/AnalyticsTracker";
-import HeaderSearch from "@/features/header/components/HeaderSearch";
-import NotificationsMenu from "@/features/header/components/NotificationsMenu";
 import Skeleton from "@/shared/components/ui/Skeleton";
+
+const HeaderSearch = dynamic(() => import("@/features/header/components/HeaderSearch"), {
+  loading: () => (
+    <div className="relative flex w-full flex-1 justify-center font-space-grotesk sm:w-auto" aria-hidden>
+      <div className="header-search" />
+    </div>
+  ),
+});
+
+const NotificationsMenu = dynamic(() => import("@/features/header/components/NotificationsMenu"), {
+  loading: () => <div className="hidden min-w-[140px] lg:block" aria-hidden />,
+});
 
 export default function Header() {
   const t = useTranslations();

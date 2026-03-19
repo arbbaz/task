@@ -1,6 +1,7 @@
 import ReviewCard from "@/features/reviews/components/ReviewCard";
 import type { Review } from "@/lib/types";
 import { AnimatePresence, motion } from "framer-motion";
+import StatePanel from "@/shared/components/ui/StatePanel";
 import ProfileListSkeleton from "@/shared/components/ui/ProfileListSkeleton";
 
 interface ProfileReviewsPanelProps {
@@ -9,6 +10,8 @@ interface ProfileReviewsPanelProps {
   hasMore: boolean;
   loadingMore: boolean;
   loading?: boolean;
+  errorMessage?: string | null;
+  onRetry?: () => void;
   onLoadMore: () => void;
   onVoteUpdate?: (reviewId: string, helpfulCount: number, downVoteCount: number) => void;
   /** Bulk follow status for review authors; avoids per-card follow-status API calls. */
@@ -21,6 +24,8 @@ export default function ProfileReviewsPanel({
   hasMore,
   loadingMore,
   loading = false,
+  errorMessage = null,
+  onRetry,
   onLoadMore,
   onVoteUpdate,
   followStatusByUsername = {},
@@ -29,13 +34,19 @@ export default function ProfileReviewsPanel({
     return <ProfileListSkeleton variant="review" />;
   }
 
-  if (reviews.length === 0) {
+  if (errorMessage) {
     return (
-      <div className="card-base py-8 text-center text-sm text-text-secondary">
-        <p className="font-medium text-text-primary">No reviews yet</p>
-        <p className="mt-1">Reviews from @{username} will show here.</p>
-      </div>
+      <StatePanel
+        title="Couldn't load reviews"
+        message={errorMessage}
+        actionLabel={onRetry ? "Try again" : undefined}
+        onAction={onRetry}
+      />
     );
+  }
+
+  if (reviews.length === 0) {
+    return <StatePanel title="No reviews yet" message={`Reviews from @${username} will show here.`} />;
   }
 
   return (

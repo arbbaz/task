@@ -7,7 +7,7 @@ import FileComplaintForm from "@/features/complaints/components/FileComplaintFor
 import ComplaintListCard from "@/features/complaints/components/ComplaintListCard";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import { useComplaintsFeed } from "@/features/complaints/hooks/useComplaintsFeed";
-import { FeedEmpty, FeedEnd, FeedLoading, FeedLoadMore } from "@/shared/components/feed";
+import { FeedEmpty, FeedEnd, FeedError, FeedLoading, FeedLoadMore } from "@/shared/components/feed";
 import type { Complaint } from "@/lib/types";
 
 interface ComplaintsFeedSectionProps {
@@ -17,7 +17,8 @@ interface ComplaintsFeedSectionProps {
 export default function ComplaintsFeedSection({ initialComplaints }: ComplaintsFeedSectionProps) {
   const t = useTranslations("feed");
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const { complaints, setComplaints, loading, loadingMore, hasMore, loadMore } = useComplaintsFeed(initialComplaints);
+  const { complaints, setComplaints, loading, loadingMore, hasMore, loadMore, fetchComplaints, errorMessage } =
+    useComplaintsFeed(initialComplaints);
 
   useInfiniteScroll(sentinelRef, { hasMore, loading, loadingMore, loadMore });
 
@@ -31,6 +32,8 @@ export default function ComplaintsFeedSection({ initialComplaints }: ComplaintsF
 
       {loading ? (
         <FeedLoading />
+      ) : errorMessage && complaints.length === 0 ? (
+        <FeedError message={errorMessage} onRetry={() => void fetchComplaints()} />
       ) : complaints.length > 0 ? (
         <>
           {complaints.map((complaint, index) => (

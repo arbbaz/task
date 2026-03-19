@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
-import { FeedEmpty, FeedEnd, FeedLoading, FeedLoadMore } from "@/shared/components/feed";
+import { FeedEmpty, FeedEnd, FeedError, FeedLoading, FeedLoadMore } from "@/shared/components/feed";
 import ReviewCard from "@/features/reviews/components/ReviewCard";
 import { useReviewsFeed } from "@/features/reviews/hooks/useReviewsFeed";
 import { useReviewAuthorsFollowStatus } from "@/features/reviews/hooks/useReviewAuthorsFollowStatus";
@@ -16,7 +16,8 @@ interface ReviewsFeedProps {
 export default function ReviewsFeed({ initialReviews }: ReviewsFeedProps) {
   const t = useTranslations("feed");
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const { reviews, loading, loadingMore, hasMore, loadMore, updateReviewVote } = useReviewsFeed(initialReviews);
+  const { reviews, loading, loadingMore, hasMore, loadMore, updateReviewVote, fetchReviews, errorMessage } =
+    useReviewsFeed(initialReviews);
   const followStatusByUsername = useReviewAuthorsFollowStatus(reviews);
 
   useInfiniteScroll(sentinelRef, { hasMore, loading, loadingMore, loadMore });
@@ -26,6 +27,9 @@ export default function ReviewsFeed({ initialReviews }: ReviewsFeedProps) {
   }
 
   if (reviews.length === 0) {
+    if (errorMessage) {
+      return <FeedError message={errorMessage} onRetry={() => void fetchReviews()} />;
+    }
     return <FeedEmpty message={t("emptyReviews")} />;
   }
 

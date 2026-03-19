@@ -1,10 +1,12 @@
 import ProfileUserRow from "@/features/users/components/ProfileUserRow";
 import type { Author } from "@/lib/types";
+import StatePanel from "@/shared/components/ui/StatePanel";
 
 interface ProfileFollowersPanelProps {
   followers: Author[];
   username: string;
   loading: boolean;
+  errorMessage?: string | null;
   followStatusByUsername: Record<string, boolean>;
   currentUsername: string | undefined;
   onFollow: (targetUsername: string, currentlyFollowing: boolean) => void;
@@ -14,24 +16,25 @@ export default function ProfileFollowersPanel({
   followers,
   username,
   loading,
+  errorMessage = null,
   followStatusByUsername,
   currentUsername,
   onFollow,
 }: ProfileFollowersPanelProps) {
   if (loading) {
-    return (
-      <div className="card-base py-6 text-center text-sm text-text-secondary">
-        Loading followers…
-      </div>
-    );
+    return <StatePanel title="Loading followers" message="Fetching the latest follower list." />;
+  }
+
+  if (errorMessage) {
+    return <StatePanel title="Couldn't load followers" message={errorMessage} />;
   }
 
   if (followers.length === 0) {
     return (
-      <div className="card-base py-8 text-center text-sm text-text-secondary">
-        <p className="font-medium text-text-primary">No followers yet</p>
-        <p className="mt-1">When someone follows @{username}, they&apos;ll appear here.</p>
-      </div>
+      <StatePanel
+        title="No followers yet"
+        message={`When someone follows @${username}, they'll appear here.`}
+      />
     );
   }
 

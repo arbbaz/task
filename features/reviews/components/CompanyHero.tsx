@@ -1,7 +1,7 @@
 import Image from "next/image";
-import { LuDot } from "react-icons/lu";
 import { useTranslations } from "next-intl";
 import { companyProfile } from "@/shared/data/uiContent";
+import { DotIcon } from "@/shared/components/ui/Icons";
 
 interface CompanyHeroProps {
   isLoggedIn: boolean;
@@ -28,13 +28,13 @@ export default function CompanyHero({ isLoggedIn }: CompanyHeroProps) {
                 <h1 className="text-sm font-semibold text-text-heading">{companyProfile.name}</h1>
                 <p className="text-xl font-bold text-primary-lighter">{companyProfile.score}</p>
                 <p className="text-xs text-text-primary">
-                  ({companyProfile.reviews}) {t("companyProfile.reviews")} <LuDot className="inline-block text-sm" />
+                  ({companyProfile.reviews}) {t("companyProfile.reviews")} <DotIcon className="inline-block h-4 w-4" />
                   ({companyProfile.companies}) {t("companyProfile.companies")}
                 </p>
               </div>
             </div>
             <div className="flex w-full items-center gap-4 sm:w-auto">
-              <Image src="/verify.svg" alt="" width={16} height={16} className="flex-shrink-0" />
+              <Image src="/verify.svg" alt="" width={16} height={16} sizes="16px" className="h-4 w-4 flex-shrink-0" />
               <button type="button" className="btn-primary h-9 w-full px-4 sm:h-10 sm:w-[162px]">
                 {t("companyProfile.visitWebsite")}
               </button>
@@ -60,7 +60,7 @@ export default function CompanyHero({ isLoggedIn }: CompanyHeroProps) {
           </div>
         ) : (
           <div className="flex min-w-0 flex-1 items-center gap-6 break-words text-sm font-light leading-[22px] text-text-primary">
-            <Image src="/analytics.png" alt="info" width={16} height={16} className="flex-shrink-0" />
+            <Image src="/analytics.png" alt="info" width={16} height={16} sizes="16px" className="h-4 w-4 flex-shrink-0" />
             {t("companyProfile.reviewsAddedToday")}
           </div>
         )}

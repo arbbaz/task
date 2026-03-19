@@ -1,22 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useQueryClient } from "@tanstack/react-query";
-import { usersApi } from "@/features/users/api/client";
-import {
-  useProfileQueries,
-  useFollowersQuery,
-  useFollowingQuery,
-  useFollowStatusBulkQuery,
-} from "@/features/users/hooks/useProfileQueries";
+import { useProfileQueries } from "@/features/users/hooks/useProfileQueries";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { useToast } from "@/lib/contexts/ToastContext";
-import { formatJoined, getActivitySummary } from "@/features/users/utils/profileActivity";
+import { formatJoined } from "@/features/users/utils/profileActivity";
 import UserProfileSkeleton from "@/shared/components/ui/UserProfileSkeleton";
-import { queryKeys } from "@/lib/queryKeys";
 import {
-  type TabId,
   ProfileHeader,
   ProfileActivitySummary,
   ProfileStatsRow,
@@ -26,13 +16,16 @@ import {
   ProfileFollowersPanel,
   ProfileFollowingPanel,
 } from "./components";
+import { useProfileShare } from "./hooks/useProfileShare";
+import { useProfileTabState } from "./hooks/useProfileTabState";
+import { useProfileRelations } from "./hooks/useProfileRelations";
+import { useProfilePresentation } from "./hooks/useProfilePresentation";
 
 interface UserProfilePageClientProps {
   username: string;
 }
 
 export default function UserProfilePageClient({ username }: UserProfilePageClientProps) {
-  const queryClient = useQueryClient();
   const { isLoggedIn, user: currentUser } = useAuth();
   const reduceMotion = useReducedMotion();
   const {
@@ -48,128 +41,44 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
     loadingComplaints,
     loadingMoreReviews,
     loadingMoreComplaints,
+    refetchReviews,
+    refetchComplaints,
     toggleFollow,
     loadMoreReviews,
     loadMoreComplaints,
     updateReviewVote,
+    reviewsError,
+    complaintsError,
   } = useProfileQueries(username, {
     // Waterfall: only fetch reviews/complaints after profile is loaded so LCP (profile card) isn't blocked.
     enableListsAfterProfile: true,
   });
-  const { showToast } = useToast();
 
-  const [activeTab, setActiveTab] = useState<TabId>("reviews");
+  const handleShare = useProfileShare(username);
+  const { activeTab, switchTab } = useProfileTabState();
+  const { activity, tabs } = useProfilePresentation({
+    reviews,
+    complaints,
+    reviewsPagination,
+    complaintsPagination,
+    stats,
+  });
   const [followHoverUnfollow, setFollowHoverUnfollow] = useState(false);
 
-  const followersQuery = useFollowersQuery(username, !!user && activeTab === "followers");
-  const followingQuery = useFollowingQuery(username, !!user && activeTab === "following");
-  const followers = followersQuery.data ?? [];
-  const following = followingQuery.data ?? [];
-  const loadingRelations = activeTab === "followers" ? followersQuery.isLoading : followingQuery.isLoading;
-
-  const relationUsernames = activeTab === "followers"
-    ? followers.map((u) => u.username).filter(Boolean)
-    : following.map((u) => u.username).filter(Boolean);
-  const followStatusQuery = useFollowStatusBulkQuery(
-    relationUsernames,
-    !!user &&
-      (activeTab === "followers" || activeTab === "following") &&
-      relationUsernames.length > 0,
-    currentUser?.id ?? null
-  );
-
-  const reviewAuthorUsernames = useMemo(
-    () => [...new Set(reviews.map((r) => r.author?.username).filter(Boolean))] as string[],
-    [reviews]
-  );
-  const reviewAuthorsFollowQuery = useFollowStatusBulkQuery(
-    reviewAuthorUsernames,
-    !!user && activeTab === "reviews" && reviewAuthorUsernames.length > 0,
-    currentUser?.id ?? null
-  );
-
-  const followStatusByUsername =
-    activeTab === "reviews"
-      ? (reviewAuthorsFollowQuery.data?.following ?? {})
-      : (followStatusQuery.data?.following ?? {});
-
-  const handleFollowRow = async (targetUsername: string, currentlyFollowing: boolean) => {
-    if (currentlyFollowing) {
-      const res = await usersApi.unfollow(targetUsername);
-      if (!res.error) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.profile(username) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.profileFollowers(username) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.profileFollowing(username) });
-        queryClient.invalidateQueries({ queryKey: ["follow-status-bulk"] });
-      }
-    } else {
-      const res = await usersApi.follow(targetUsername);
-      if (!res.error) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.profile(username) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.profileFollowers(username) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.profileFollowing(username) });
-        queryClient.invalidateQueries({ queryKey: ["follow-status-bulk"] });
-      }
-    }
-  };
-
-  const handleShare = async () => {
-    const url = typeof window !== "undefined" ? window.location.href : "";
-    const title = `${username} – Profile`;
-    try {
-      if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share({ title, url });
-        showToast("Profile link shared.", "success");
-      } else {
-        await navigator.clipboard.writeText(url);
-        showToast("Profile link copied to clipboard.", "success");
-      }
-    } catch (err) {
-      if ((err as Error).name !== "AbortError") {
-        showToast("Failed to share profile.", "error");
-      }
-    }
-  };
-
-  const switchTab = (tab: TabId) => {
-    setActiveTab(tab);
-    setTimeout(() => {
-      const panel = document.getElementById(`panel-${tab}`);
-      const firstFocusable = panel?.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      );
-      if (firstFocusable) {
-        firstFocusable.focus({ preventScroll: true });
-      } else {
-        panel?.focus();
-      }
-    }, 0);
-  };
-
-  const activity = useMemo(
-    () => getActivitySummary(reviews, complaints),
-    [reviews, complaints],
-  );
-  const tabs = useMemo(
-    () => [
-      { id: "reviews" as const, label: "Reviews", count: reviewsPagination?.total ?? reviews.length },
-      {
-        id: "complaints" as const,
-        label: "Complaints",
-        count: complaintsPagination?.total ?? complaints.length,
-      },
-      { id: "followers" as const, label: "Followers", count: stats?.followersCount ?? 0 },
-      { id: "following" as const, label: "Following", count: stats?.followingCount ?? 0 },
-    ],
-    [
-      reviewsPagination?.total,
-      reviews.length,
-      complaintsPagination?.total,
-      complaints.length,
-      stats?.followersCount,
-      stats?.followingCount,
-    ],
-  );
+  const {
+    followers,
+    following,
+    loadingRelations,
+    relationsError,
+    followStatusByUsername,
+    handleFollowRow,
+  } = useProfileRelations({
+    activeTab,
+    username,
+    profileLoaded: Boolean(user),
+    reviews,
+    currentUser,
+  });
 
   if (!loading && !user) {
     return null;
@@ -242,6 +151,10 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                     }
                     loading={loadingReviews}
                     loadingMore={loadingMoreReviews}
+                    errorMessage={
+                      reviewsError instanceof Error ? reviewsError.message : null
+                    }
+                    onRetry={() => void refetchReviews()}
                     onLoadMore={loadMoreReviews}
                     onVoteUpdate={updateReviewVote}
                     followStatusByUsername={followStatusByUsername}
@@ -271,6 +184,10 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                     }
                     loading={loadingComplaints}
                     loadingMore={loadingMoreComplaints}
+                    errorMessage={
+                      complaintsError instanceof Error ? complaintsError.message : null
+                    }
+                    onRetry={() => void refetchComplaints()}
                     onLoadMore={loadMoreComplaints}
                   />
                 )}
@@ -290,6 +207,9 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                     followers={followers}
                     username={username}
                     loading={loadingRelations}
+                    errorMessage={
+                      relationsError instanceof Error ? relationsError.message : null
+                    }
                     followStatusByUsername={followStatusByUsername}
                     currentUsername={currentUser?.username}
                     onFollow={(targetUsername, currentlyFollowing) =>
@@ -313,6 +233,9 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                     following={following}
                     username={username}
                     loading={loadingRelations}
+                    errorMessage={
+                      relationsError instanceof Error ? relationsError.message : null
+                    }
                     followStatusByUsername={followStatusByUsername}
                     currentUsername={currentUser?.username}
                     onFollow={(targetUsername, currentlyFollowing) =>

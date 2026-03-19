@@ -15,6 +15,7 @@ import type { UserProfileResponse } from "@/features/users/api/client";
 import { useToast } from "@/lib/contexts/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Complaint, Review } from "@/lib/types";
+import { syncFollowStatusBulkCaches } from "@/features/users/utils/followStatusCache";
 
 const PAGE_SIZE = 10;
 
@@ -42,7 +43,7 @@ export function useProfileQueries(
 ) {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user: currentUser } = useAuth();
 
   const profileQuery = useQuery({
     queryKey: queryKeys.profile(username),
@@ -127,13 +128,58 @@ export function useProfileQueries(
       if (res.error) throw new Error(res.error);
       return { following: false };
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.profile(variables.username) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.profileFollowers(variables.username) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.profileFollowing(variables.username) });
-      queryClient.invalidateQueries({ queryKey: ["follow-status-bulk"] });
+    onMutate: async (variables) => {
+      const profileKey = queryKeys.profile(variables.username);
+      const previousProfile = queryClient.getQueryData<UserProfileResponse>(profileKey);
+
+      queryClient.setQueryData<UserProfileResponse | undefined>(profileKey, (current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          stats: {
+            ...current.stats,
+            followersCount: Math.max(
+              0,
+              current.stats.followersCount + (variables.follow ? 1 : -1),
+            ),
+          },
+          viewerState: {
+            ...current.viewerState,
+            isFollowing: variables.follow,
+          },
+        };
+      });
+
+      syncFollowStatusBulkCaches(
+        queryClient,
+        currentUser?.id ?? null,
+        variables.username,
+        variables.follow,
+      );
+
+      return { previousProfile };
     },
-    onError: (err) => {
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileFollowers(variables.username) });
+      if (currentUser?.username) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.profileFollowing(currentUser.username),
+        });
+      }
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousProfile) {
+        queryClient.setQueryData(
+          queryKeys.profile(variables.username),
+          context.previousProfile,
+        );
+      }
+      syncFollowStatusBulkCaches(
+        queryClient,
+        currentUser?.id ?? null,
+        variables.username,
+        !variables.follow,
+      );
       showToast(err instanceof Error ? err.message : "Failed to update follow", "error");
     },
   });
@@ -259,12 +305,16 @@ export function useProfileQueries(
     loadingMoreReviews: reviewsInfinite.isFetchingNextPage,
     loadingMoreComplaints: complaintsInfinite.isFetchingNextPage,
     refetchProfile: profileQuery.refetch,
+    refetchReviews: reviewsInfinite.refetch,
+    refetchComplaints: complaintsInfinite.refetch,
     toggleFollow,
     loadMoreReviews,
     loadMoreComplaints,
     updateReviewVote,
     updateComplaintVote,
     profileError: profileQuery.error,
+    reviewsError: reviewsInfinite.error,
+    complaintsError: complaintsInfinite.error,
   };
 }
 

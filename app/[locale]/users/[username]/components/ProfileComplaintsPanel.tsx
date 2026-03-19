@@ -1,6 +1,7 @@
 import ComplaintListCard from "@/features/complaints/components/ComplaintListCard";
 import type { Complaint } from "@/lib/types";
 import { AnimatePresence, motion } from "framer-motion";
+import StatePanel from "@/shared/components/ui/StatePanel";
 import ProfileListSkeleton from "@/shared/components/ui/ProfileListSkeleton";
 
 interface ProfileComplaintsPanelProps {
@@ -9,6 +10,8 @@ interface ProfileComplaintsPanelProps {
   hasMore: boolean;
   loadingMore: boolean;
   loading?: boolean;
+  errorMessage?: string | null;
+  onRetry?: () => void;
   onLoadMore: () => void;
 }
 
@@ -18,19 +21,27 @@ export default function ProfileComplaintsPanel({
   hasMore,
   loadingMore,
   loading = false,
+  errorMessage = null,
+  onRetry,
   onLoadMore,
 }: ProfileComplaintsPanelProps) {
   if (loading) {
     return <ProfileListSkeleton variant="complaint" />;
   }
 
-  if (complaints.length === 0) {
+  if (errorMessage) {
     return (
-      <div className="card-base py-8 text-center text-sm text-text-secondary">
-        <p className="font-medium text-text-primary">No complaints yet</p>
-        <p className="mt-1">Complaints from @{username} will show here.</p>
-      </div>
+      <StatePanel
+        title="Couldn't load complaints"
+        message={errorMessage}
+        actionLabel={onRetry ? "Try again" : undefined}
+        onAction={onRetry}
+      />
     );
+  }
+
+  if (complaints.length === 0) {
+    return <StatePanel title="No complaints yet" message={`Complaints from @${username} will show here.`} />;
   }
 
   return (

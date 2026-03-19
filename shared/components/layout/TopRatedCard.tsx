@@ -1,65 +1,72 @@
 "use client";
 
-import { LuDot } from "react-icons/lu";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
+import type { SidebarTopRatedCard } from "@/features/layout/hooks/useTopRatedCards";
+import { DotIcon } from "@/shared/components/ui/Icons";
 
 interface TopRatedCardProps {
-  card: {
-    title: string;
-    product: {
-      name: string;
-      score: string;
-      reviews: string;
-      companies: string;
-      badge: { text: string; color: string };
-      description: string;
-      bgColor: string;
-      textColor: string;
-      scoreColor: string;
-      separatorColor: string;
-      hasVerify?: boolean;
-    };
-  };
+  card: SidebarTopRatedCard;
   index: number;
 }
 
+const badgeToneClass = {
+  primary: "sidebar-card-badge-primary",
+  accent: "sidebar-card-badge-accent",
+  warning: "sidebar-card-badge-warning",
+} as const;
+
+const cardThemeClass = {
+  dark: {
+    card: "sidebar-card-dark",
+    body: "sidebar-card-body-dark",
+    text: "sidebar-card-text-dark",
+    score: "sidebar-card-score-dark",
+    divider: "sidebar-card-divider-dark",
+  },
+  light: {
+    card: "sidebar-card-light",
+    body: "sidebar-card-body-light",
+    text: "sidebar-card-text-light",
+    score: "sidebar-card-score-light",
+    divider: "sidebar-card-divider-light",
+  },
+} as const;
+
 export default function TopRatedCard({ card, index }: TopRatedCardProps) {
   const t = useTranslations();
+  const theme = cardThemeClass[card.product.theme];
 
   return (
-    <div className={`rounded-t-md mb-2 rounded-b-md border border-border-light text-white overflow-hidden min-h-[248px] ${index === 0 ? 'bg-dark-bg' : 'bg-white'}`}>
-      <div className="flex items-center justify-between px-4 py-5 bg-dark-bg">
-        <h3 className="text-sm font-semibold">{card.title || t('topRated.topRatedThisWeek')}</h3>
+    <div className={`sidebar-card ${theme.card}`}>
+      <div className="sidebar-card-header">
+        <h3 className="sidebar-card-title">{card.title || t("topRated.topRatedThisWeek")}</h3>
       </div>
-      <div className={`space-y-2 p-3 ${card.product.bgColor} `}>
-        <div className="flex items-start sm:items-center w-full gap-4">
-          <div className="flex items-center gap-2 flex-col flex-shrink-0">
-            <div className="h-10 w-10 rounded-md border border-primary-border bg-bg-white" />
-            <div className={`${card.product.badge.color} text-[10px] font-bold text-white ${index === 0 ? 'px-1 py-0.5' : 'px-2 py-1'} rounded-md`}>
+      <div className={`sidebar-card-body ${theme.body}`}>
+        <div className="sidebar-card-summary">
+          <div className="sidebar-card-media">
+            <div className="sidebar-card-logo" />
+            <div
+              className={`sidebar-card-badge ${badgeToneClass[card.product.badge.tone]} ${
+                index === 0 ? "px-1 py-0.5" : "px-2 py-1"
+              }`}
+            >
               {card.product.badge.text}
             </div>
           </div>
-          <div className={`rounded-md flex flex-col gap-1 text-sm font-bold ${card.product.textColor} ${index === 1 ? 'flex-1 min-w-0' : 'min-w-0'}`}>
-            {/* {index === 1 ? (
-              <div className="flex items-center justify-between w-full gap-2">
-                <span className="break-words">{card.product.name}</span>
-                <Image src="/verify.svg" alt="arrow-right" width={20} height={20} className="flex-shrink-0" />
-              </div>
-            ) : (
-              <div className="break-words">{card.product.name}</div>
-            )} */}
-            <span className={`text-lg ${card.product.scoreColor} font-bold leading-[14px] tracking-normal sm:mr-4`}>
+          <div className={`sidebar-card-copy ${theme.text} ${index === 1 ? "flex-1" : ""}`}>
+            <p className="sidebar-card-name">{card.product.name}</p>
+            <span className={`sidebar-card-score ${theme.score}`}>
               {card.product.score}
             </span>
-            <p className={`mt-1 text-xs ${card.product.textColor} font-normal break-words`}>
-              ({card.product.reviews}) <LuDot className="inline-block text-sm font-bold" /> ({card.product.companies}) {t('companyProfile.companies')}
+            <p className="sidebar-card-meta">
+              ({card.product.reviews}) <DotIcon className="inline-block h-4 w-4 font-bold" /> ({card.product.companies}) {t("companyProfile.companies")}
             </p>
           </div>
         </div>
-        <div className={`h-[0.5px] mb-4 mt-4 w-full ${card.product.separatorColor}`}></div>
-        <p className={`mt-2 text-[13px] ${card.product.textColor} break-words`}>{card.product.description}</p>
-        <button className="mt-3 h-10 w-full rounded-md bg-primary text-xs font-semibold text-white">
-          {t('topRated.visitWebsite')}
+        <div className={`sidebar-card-divider ${theme.divider}`} />
+        <p className={`sidebar-card-description ${theme.text}`}>{card.product.description}</p>
+        <button className="sidebar-card-cta">
+          {t("topRated.visitWebsite")}
         </button>
       </div>
     </div>

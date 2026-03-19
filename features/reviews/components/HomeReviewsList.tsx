@@ -5,7 +5,7 @@ import ReviewCard from "@/features/reviews/components/ReviewCard";
 import { useReviewsFeed } from "@/features/reviews/hooks/useReviewsFeed";
 import { useReviewAuthorsFollowStatus } from "@/features/reviews/hooks/useReviewAuthorsFollowStatus";
 import { useReviewFeed } from "@/features/reviews/contexts/ReviewFeedContext";
-import { FeedEmpty, FeedEnd, FeedLoading, FeedLoadMore } from "@/shared/components/feed";
+import { FeedEmpty, FeedEnd, FeedError, FeedLoading, FeedLoadMore } from "@/shared/components/feed";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import type { Review } from "@/lib/types";
 
@@ -18,7 +18,7 @@ interface HomeReviewsListProps {
 export default function HomeReviewsList({ initialReviews, emptyMessage }: HomeReviewsListProps) {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { registerFeed } = useReviewFeed();
-  const { reviews, setReviews, loading, loadingMore, hasMore, loadMore, fetchReviews, updateReviewVote } =
+  const { reviews, setReviews, loading, loadingMore, hasMore, loadMore, fetchReviews, updateReviewVote, errorMessage } =
     useReviewsFeed(initialReviews);
   const followStatusByUsername = useReviewAuthorsFollowStatus(reviews);
 
@@ -32,6 +32,8 @@ export default function HomeReviewsList({ initialReviews, emptyMessage }: HomeRe
     <>
       {loading ? (
         <FeedLoading />
+      ) : errorMessage && reviews.length === 0 ? (
+        <FeedError message={errorMessage} onRetry={() => void fetchReviews()} />
       ) : reviews.length > 0 ? (
         <>
           {reviews.map((review) => (

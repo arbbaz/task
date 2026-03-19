@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { getTrendingOverviewQueryOptions } from "@/features/trending/hooks/useTrendingOverviewQuery";
 import { usePathname, useRouter } from "@/i18n/routing";
 
 type IdleWindow = Window & {
@@ -30,7 +28,6 @@ function isInternalHref(href: string) {
 
 export default function RouteWarmup() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const pathname = normalizeRoute(usePathname() || "/");
 
   const prefetchRoute = useCallback(
@@ -54,14 +51,12 @@ export default function RouteWarmup() {
     const timeoutIds: number[] = [];
 
     const warmup = () => {
-      void queryClient.prefetchQuery(getTrendingOverviewQueryOptions());
-
       routes.forEach((route, index) => {
         const timeoutId = window.setTimeout(() => {
           if (!cancelled) {
             prefetchRoute(route);
           }
-        }, index < 2 ? index * 70 : 140 + (index - 2) * 110);
+        }, index < 2 ? index * 120 : 260 + (index - 2) * 180);
 
         timeoutIds.push(timeoutId);
       });
@@ -69,7 +64,7 @@ export default function RouteWarmup() {
 
     const idleWindow = window as IdleWindow;
     if (typeof idleWindow.requestIdleCallback === "function") {
-      const idleId = idleWindow.requestIdleCallback(warmup, { timeout: 1400 });
+      const idleId = idleWindow.requestIdleCallback(warmup, { timeout: 3200 });
       return () => {
         cancelled = true;
         timeoutIds.forEach((id) => window.clearTimeout(id));
@@ -79,13 +74,13 @@ export default function RouteWarmup() {
       };
     }
 
-    const fallbackId = window.setTimeout(warmup, 700);
+    const fallbackId = window.setTimeout(warmup, 1800);
     return () => {
       cancelled = true;
       window.clearTimeout(fallbackId);
       timeoutIds.forEach((id) => window.clearTimeout(id));
     };
-  }, [pathname, prefetchRoute, queryClient]);
+  }, [pathname, prefetchRoute]);
 
   useEffect(() => {
     const handleWarmIntent = (event: Event) => {
