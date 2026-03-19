@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { usersApi } from "@/features/users/api/client";
 import {
@@ -57,9 +56,6 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
     // Waterfall: only fetch reviews/complaints after profile is loaded so LCP (profile card) isn't blocked.
     enableListsAfterProfile: true,
   });
-  const router = useRouter();
-  const pathname = usePathname();
-  const locale = pathname.split("/")[1] || "en";
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<TabId>("reviews");
@@ -176,7 +172,6 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
   );
 
   if (!loading && !user) {
-    router.push("/");
     return null;
   }
 
@@ -300,7 +295,6 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                     onFollow={(targetUsername, currentlyFollowing) =>
                       void handleFollowRow(targetUsername, currentlyFollowing)
                     }
-                    locale={locale}
                   />
                 )}
               </div>
@@ -324,7 +318,6 @@ export default function UserProfilePageClient({ username }: UserProfilePageClien
                     onFollow={(targetUsername, currentlyFollowing) =>
                       void handleFollowRow(targetUsername, currentlyFollowing)
                     }
-                    locale={locale}
                   />
                 )}
               </div>

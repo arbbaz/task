@@ -1,32 +1,65 @@
-import Credentials from 'next-auth/providers/credentials';
-import type { NextAuthOptions } from 'next-auth';
-import { getBackendUrl } from '@/lib/env';
+import Credentials from "next-auth/providers/credentials";
+import type { NextAuthOptions } from "next-auth";
+import { getBackendUrl } from "@/lib/env";
+
+const isSecureCookie = process.env.NODE_ENV === "production";
+const secureCookiePrefix = isSecureCookie ? "__Secure-" : "";
+const hostCookiePrefix = isSecureCookie ? "__Host-" : "";
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
+  useSecureCookies: isSecureCookie,
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
+  },
+  cookies: {
+    sessionToken: {
+      name: `${secureCookiePrefix}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isSecureCookie,
+      },
+    },
+    callbackUrl: {
+      name: `${secureCookiePrefix}next-auth.callback-url`,
+      options: {
+        sameSite: "lax",
+        path: "/",
+        secure: isSecureCookie,
+      },
+    },
+    csrfToken: {
+      name: `${hostCookiePrefix}next-auth.csrf-token`,
+      options: {
+        httpOnly: false,
+        sameSite: "lax",
+        path: "/",
+        secure: isSecureCookie,
+      },
+    },
   },
   providers: [
     Credentials({
-      name: 'credentials',
+      name: "credentials",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const email = typeof credentials?.email === 'string' ? credentials.email : '';
-        const password = typeof credentials?.password === 'string' ? credentials.password : '';
+        const email = typeof credentials?.email === "string" ? credentials.email : "";
+        const password = typeof credentials?.password === "string" ? credentials.password : "";
 
         if (!email || !password) {
           return null;
         }
 
         const response = await fetch(`${getBackendUrl()}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
-          cache: 'no-store',
+          cache: "no-store",
         });
 
         if (!response.ok) {

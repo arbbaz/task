@@ -27,6 +27,8 @@ export interface PaginatedData<T> {
 
 export async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
   try {
+    const method = (options?.method ?? "GET").toUpperCase();
+    const isMutation = !["GET", "HEAD", "OPTIONS"].includes(method);
     const headers = new Headers(options?.headers);
     if (options?.body && !headers.has("Content-Type")) {
       headers.set("Content-Type", "application/json");
@@ -34,6 +36,7 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
 
     const response = await fetch(`${API_BASE}${endpoint}`, {
       ...options,
+      cache: options?.cache ?? (isMutation ? "no-store" : undefined),
       credentials: "include",
       headers,
     });

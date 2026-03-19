@@ -66,7 +66,7 @@ export function useSidebarProfileSettings(enabled: boolean) {
       setUsernameCheckStatus(available ? "available" : "taken");
     }, USERNAME_CHECK_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [enabled, user?.username, profileUsername]);
+  }, [enabled, user, profileUsername]);
 
   useEffect(() => {
     if (!enabled || !user) return;

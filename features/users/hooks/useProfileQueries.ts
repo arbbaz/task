@@ -14,7 +14,7 @@ import { usersApi } from "@/features/users/api/client";
 import type { UserProfileResponse } from "@/features/users/api/client";
 import { useToast } from "@/lib/contexts/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
-import type { Complaint, Review, UserProfile } from "@/lib/types";
+import type { Complaint, Review } from "@/lib/types";
 
 const PAGE_SIZE = 10;
 
@@ -181,17 +181,17 @@ export function useProfileQueries(
     });
   }, [user, isFollowing, followMutation]);
 
-  const loadMoreReviews = useCallback(() => {
+  const loadMoreReviews = () => {
     if (reviewsInfinite.hasNextPage && !reviewsInfinite.isFetchingNextPage) {
       reviewsInfinite.fetchNextPage();
     }
-  }, [reviewsInfinite.hasNextPage, reviewsInfinite.isFetchingNextPage, reviewsInfinite.fetchNextPage]);
+  };
 
-  const loadMoreComplaints = useCallback(() => {
+  const loadMoreComplaints = () => {
     if (complaintsInfinite.hasNextPage && !complaintsInfinite.isFetchingNextPage) {
       complaintsInfinite.fetchNextPage();
     }
-  }, [complaintsInfinite.hasNextPage, complaintsInfinite.isFetchingNextPage, complaintsInfinite.fetchNextPage]);
+  };
 
   const updateReviewVote = useCallback(
     (reviewId: string, helpfulCount: number, downVoteCount: number) => {

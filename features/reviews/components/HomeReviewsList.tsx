@@ -39,7 +39,6 @@ export default function HomeReviewsList({ initialReviews, emptyMessage }: HomeRe
               key={review.id}
               review={review}
               onVoteUpdate={updateReviewVote}
-              skipFollowStatusFetch
               isFollowingAuthor={
                 review.author?.username !== undefined
                   ? followStatusByUsername[review.author.username]

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { LuDot } from "react-icons/lu";
 import { useTranslations } from 'next-intl';
 

@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import type { Author } from "@/lib/types";
 
 interface ProfileUserRowProps {
   user: Author;
-  locale: string;
   isFollowing: boolean;
   currentUsername: string | undefined;
   onFollow: (username: string, currentlyFollowing: boolean) => void;
@@ -13,7 +12,6 @@ interface ProfileUserRowProps {
 
 export default function ProfileUserRow({
   user,
-  locale,
   isFollowing,
   currentUsername,
   onFollow,
@@ -24,7 +22,7 @@ export default function ProfileUserRow({
   return (
     <div className="flex items-center justify-between gap-3 py-3">
       <Link
-        href={`/${locale}/users/${encodeURIComponent(user.username)}`}
+        href={`/users/${encodeURIComponent(user.username)}`}
         className="flex min-w-0 flex-1 items-center gap-3 transition hover:opacity-90"
       >
         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold uppercase text-primary">

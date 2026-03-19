@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { NextIntlClientProvider } from 'next-intl';
-import { getTranslations } from 'next-intl/server';
-import { cookies } from 'next/headers';
-import { notFound } from 'next/navigation';
-import { routing } from '@/i18n/routing';
-import ServerProviders from '@/app/ServerProviders';
-import DeferredExtras from '@/app/[locale]/DeferredExtras';
+import { NextIntlClientProvider } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import { notFound } from "next/navigation";
+import { routing } from "@/i18n/routing";
+import Providers from "@/app/providers";
+import DeferredExtras from "@/app/[locale]/DeferredExtras";
+import LocaleDocumentSync from "@/app/[locale]/LocaleDocumentSync";
 import RouteTransitionProvider from "@/shared/components/animations/RouteTransitionProvider";
 import RouteProgress from "@/shared/components/animations/RouteProgress";
 import RouteWarmup from "@/shared/components/animations/RouteWarmup";
@@ -39,7 +39,7 @@ export async function generateMetadata({
 
 export default async function LocaleLayout({
   children,
-  params
+  params,
 }: {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
@@ -54,19 +54,15 @@ export default async function LocaleLayout({
   // Load messages directly to avoid relying on next-intl config alias resolution.
   const messages = (await import(`../../messages/${locale}.json`)).default;
 
-  const cookieStore = await cookies();
-  const analyticsConsentValue = cookieStore.get("analytics_consent")?.value;
-  const initialAnalyticsConsent =
-    analyticsConsentValue === "true" ? true : analyticsConsentValue === "false" ? false : null;
-
   return (
-    <ServerProviders>
+    <Providers>
       <NextIntlClientProvider messages={messages}>
+        <LocaleDocumentSync locale={locale} />
         <RouteProgress />
         <RouteWarmup />
         <RouteTransitionProvider>{children}</RouteTransitionProvider>
-        <DeferredExtras initialAnalyticsConsent={initialAnalyticsConsent} />
+        <DeferredExtras />
       </NextIntlClientProvider>
-    </ServerProviders>
+    </Providers>
   );
 }

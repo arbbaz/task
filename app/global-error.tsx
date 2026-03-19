@@ -14,8 +14,10 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="und" suppressHydrationWarning>
       <body className="antialiased">
         <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 py-12">
           <h1 className="text-xl font-semibold text-gray-900">

@@ -55,7 +55,6 @@ export default function ProfileReviewsPanel({
               key={review.id}
               review={review}
               onVoteUpdate={onVoteUpdate}
-              skipFollowStatusFetch
               isFollowingAuthor={
                 review.author?.username !== undefined
                   ? followStatusByUsername[review.author.username]

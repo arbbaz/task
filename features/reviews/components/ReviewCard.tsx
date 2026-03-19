@@ -5,8 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { LuDot } from "react-icons/lu";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link } from "@/i18n/routing";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { usersApi } from "@/features/users/api/client";
 import Separator from "@/shared/components/ui/Separator";
@@ -23,16 +22,12 @@ import type { Review } from "@/lib/types";
 interface ReviewCardProps {
   review: Review;
   onVoteUpdate?: (reviewId: string, helpfulCount: number, downVoteCount: number) => void;
-  /** When true, follow state comes only from isFollowingAuthor (e.g. bulk on profile); no per-card API call. */
-  skipFollowStatusFetch?: boolean;
-  /** When skipFollowStatusFetch is true, use this as the follow state for the review author. */
   isFollowingAuthor?: boolean;
 }
 
 export default function ReviewCard({
   review,
   onVoteUpdate,
-  skipFollowStatusFetch = false,
   isFollowingAuthor: isFollowingAuthorProp,
 }: ReviewCardProps) {
   const queryClient = useQueryClient();
@@ -63,29 +58,20 @@ export default function ReviewCard({
   } = useComments({ targetKey: "reviewId", targetId: review.id, initialCount: review._count?.comments ?? 0 });
 
   const authorName = review.author?.username || "Anonymous";
-  const pathname = usePathname();
-  const locale = pathname.split("/")[1] || "en";
   const authorProfileHref =
-    review.author?.username ? `/${locale}/users/${encodeURIComponent(review.author.username)}` : undefined;
+    review.author?.username ? `/users/${encodeURIComponent(review.author.username)}` : undefined;
 
   const { user: currentUser } = useAuth();
   const isOwnReview = currentUser?.username && review.author?.username === currentUser.username;
   const canFollow = Boolean(currentUser && review.author?.username && !isOwnReview);
-  const [isFollowingAuthorLocal, setIsFollowingAuthorLocal] = useState(false);
+  const [isFollowingAuthorLocal, setIsFollowingAuthorLocal] = useState(Boolean(isFollowingAuthorProp));
   const [followLoading, setFollowLoading] = useState(false);
 
-  const isFollowingAuthor = skipFollowStatusFetch
-    ? Boolean(isFollowingAuthorProp)
-    : typeof isFollowingAuthorProp === "boolean"
-      ? isFollowingAuthorProp
-      : isFollowingAuthorLocal;
+  const isFollowingAuthor = isFollowingAuthorLocal;
 
   useEffect(() => {
-    if (skipFollowStatusFetch || !canFollow || !review.author?.username) return;
-    usersApi.getFollowStatus(review.author.username).then((res) => {
-      if (!res.error && res.data) setIsFollowingAuthorLocal(res.data.following);
-    });
-  }, [canFollow, review.author?.username, skipFollowStatusFetch]);
+    setIsFollowingAuthorLocal(Boolean(isFollowingAuthorProp));
+  }, [isFollowingAuthorProp]);
 
   const handleFollowClick = () => {
     if (!review.author?.username || followLoading) return;
@@ -94,7 +80,7 @@ export default function ReviewCard({
       usersApi.unfollow(review.author.username).then((res) => {
         if (!res.error) {
           setIsFollowingAuthorLocal(false);
-          if (skipFollowStatusFetch) queryClient.invalidateQueries({ queryKey: ["follow-status-bulk"] });
+          queryClient.invalidateQueries({ queryKey: ["follow-status-bulk"] });
         }
         setFollowLoading(false);
       });
@@ -102,7 +88,7 @@ export default function ReviewCard({
       usersApi.follow(review.author.username).then((res) => {
         if (!res.error) {
           setIsFollowingAuthorLocal(true);
-          if (skipFollowStatusFetch) queryClient.invalidateQueries({ queryKey: ["follow-status-bulk"] });
+          queryClient.invalidateQueries({ queryKey: ["follow-status-bulk"] });
         }
         setFollowLoading(false);
       });

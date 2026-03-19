@@ -8,7 +8,6 @@ interface ProfileFollowersPanelProps {
   followStatusByUsername: Record<string, boolean>;
   currentUsername: string | undefined;
   onFollow: (targetUsername: string, currentlyFollowing: boolean) => void;
-  locale: string;
 }
 
 export default function ProfileFollowersPanel({
@@ -18,7 +17,6 @@ export default function ProfileFollowersPanel({
   followStatusByUsername,
   currentUsername,
   onFollow,
-  locale,
 }: ProfileFollowersPanelProps) {
   if (loading) {
     return (
@@ -43,7 +41,6 @@ export default function ProfileFollowersPanel({
         <ProfileUserRow
           key={follower.id}
           user={follower}
-          locale={locale}
           isFollowing={followStatusByUsername[follower.username] ?? false}
           currentUsername={currentUsername}
           onFollow={onFollow}

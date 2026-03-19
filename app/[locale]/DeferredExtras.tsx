@@ -12,14 +12,10 @@ const AnalyticsTracker = dynamic(
   { ssr: false }
 );
 
-interface DeferredExtrasProps {
-  initialAnalyticsConsent: boolean | null;
-}
-
-export default function DeferredExtras({ initialAnalyticsConsent }: DeferredExtrasProps) {
+export default function DeferredExtras() {
   return (
     <>
-      <CookieConsent initialConsent={initialAnalyticsConsent} />
+      <CookieConsent />
       <AnalyticsTracker />
     </>
   );

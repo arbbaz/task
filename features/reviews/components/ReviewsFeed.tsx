@@ -36,7 +36,6 @@ export default function ReviewsFeed({ initialReviews }: ReviewsFeedProps) {
           key={review.id || index}
           review={review}
           onVoteUpdate={updateReviewVote}
-          skipFollowStatusFetch
           isFollowingAuthor={
             review.author?.username !== undefined
               ? followStatusByUsername[review.author.username]
