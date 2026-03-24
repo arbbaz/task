@@ -49,16 +49,13 @@ function getPersistedUtm(): { utm_source?: string; utm_medium?: string; utm_camp
   }
 }
 
-function sendTrack(base: string, payload: Record<string, unknown>, preferBeacon = false): void {
+function sendTrack(base: string, payload: Record<string, unknown>): void {
   const body = JSON.stringify(payload);
-  if (preferBeacon && typeof navigator !== "undefined" && navigator.sendBeacon) {
-    navigator.sendBeacon(`${base}/api/analytics/track`, new Blob([body], { type: "application/json" }));
-    return;
-  }
   fetch(`${base}/api/analytics/track`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body,
+    credentials: "include",
     keepalive: true,
   }).catch(() => {});
 }
@@ -115,7 +112,7 @@ export default function AnalyticsTracker() {
         enteredAt: prevEntered,
         leftAt: now,
         consent: true,
-      }, true);
+      });
     }
 
     const enteredAt = now;
@@ -148,7 +145,7 @@ export default function AnalyticsTracker() {
         enteredAt: entered,
         leftAt,
         consent: true,
-      }, true);
+      });
     };
 
     const handleVisibility = () => {
