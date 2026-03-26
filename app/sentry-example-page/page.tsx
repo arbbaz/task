@@ -14,6 +14,44 @@ class SentryExampleFrontendError extends Error {
 export default function Page() {
   const [hasSentError, setHasSentError] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const fetchBackendError = async (type: "default" | "validation" | "database" | "nested") => {
+    setStatusMessage(`Calling backend error: ${type}`);
+    const res = await fetch(`/api/sentry-example-api?type=${type}`);
+    if (!res.ok) {
+      setHasSentError(true);
+      setStatusMessage(`Backend error (${type}) sent to Sentry.`);
+    }
+  };
+
+  const throwSyncReferenceError = () => {
+    setStatusMessage("Throwing sync client error");
+    const explode = () => {
+      throw new Error("Client sync error: source map test.");
+    };
+    explode();
+  };
+
+  const throwAsyncClientError = async () => {
+    setStatusMessage("Throwing async client error");
+    await Promise.resolve();
+    throw new Error("Client async error: source map test.");
+  };
+
+  const captureHandledClientError = () => {
+    setStatusMessage("Capturing handled client error");
+    try {
+      const payload = JSON.parse("{invalid:json}");
+      Sentry.captureMessage(`Unexpected parse result: ${String(payload)}`);
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { sample: "handled-client-error" },
+      });
+      setHasSentError(true);
+      setStatusMessage("Handled client error captured in Sentry.");
+    }
+  };
 
   useEffect(() => {
     Sentry.logger.info("Sentry example page loaded");
@@ -68,30 +106,53 @@ export default function Page() {
           .
         </p>
 
-        <button
-          type="button"
-          onClick={async () => {
-            Sentry.logger.info("User clicked the button, throwing a sample error");
-            await Sentry.startSpan(
-              {
-                name: "Example Frontend/Backend Span",
-                op: "test",
-              },
-              async () => {
-                const res = await fetch("/api/sentry-example-api");
-                if (!res.ok) {
-                  setHasSentError(true);
-                }
-              },
-            );
-            throw new SentryExampleFrontendError(
-              "This error is raised on the frontend of the example page.",
-            );
-          }}
-          disabled={!isConnected}
-        >
-          <span>Throw Sample Error</span>
-        </button>
+        <div className="button-grid">
+          <button
+            type="button"
+            onClick={async () => {
+              Sentry.logger.info("User clicked the button, throwing a sample error");
+              await Sentry.startSpan(
+                {
+                  name: "Example Frontend/Backend Span",
+                  op: "test",
+                },
+                async () => {
+                  await fetchBackendError("default");
+                },
+              );
+              throw new SentryExampleFrontendError(
+                "This error is raised on the frontend of the example page.",
+              );
+            }}
+            disabled={!isConnected}
+          >
+            <span>Throw Sample Error</span>
+          </button>
+
+          <button type="button" onClick={throwSyncReferenceError} disabled={!isConnected}>
+            <span>Client Sync Error</span>
+          </button>
+
+          <button type="button" onClick={() => void throwAsyncClientError()} disabled={!isConnected}>
+            <span>Client Async Error</span>
+          </button>
+
+          <button type="button" onClick={captureHandledClientError} disabled={!isConnected}>
+            <span>Handled Client Capture</span>
+          </button>
+
+          <button type="button" onClick={() => void fetchBackendError("validation")} disabled={!isConnected}>
+            <span>Backend Validation Error</span>
+          </button>
+
+          <button type="button" onClick={() => void fetchBackendError("database")} disabled={!isConnected}>
+            <span>Backend Database Error</span>
+          </button>
+
+          <button type="button" onClick={() => void fetchBackendError("nested")} disabled={!isConnected}>
+            <span>Backend Nested Error</span>
+          </button>
+        </div>
 
         {hasSentError ? (
           <p className="success">Error sent to Sentry.</p>
@@ -106,6 +167,7 @@ export default function Page() {
         ) : (
           <div className="success_placeholder" />
         )}
+        {statusMessage ? <p className="status">{statusMessage}</p> : null}
 
         <div className="flex-spacer" />
       </main>
@@ -184,6 +246,25 @@ export default function Page() {
 	              border: none
 	            }
 	          }
+        }
+
+        .button-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+          width: min(820px, 100%);
+        }
+
+        .button-grid button > span {
+          font-size: 14px;
+          padding: 10px 12px;
+        }
+
+        .status {
+          text-align: center;
+          color: #6E6C75;
+          font-size: 14px;
+          line-height: 1.4;
         }
 
         .description {
