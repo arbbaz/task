@@ -63,6 +63,7 @@ export function useSidebarAuthForm(options?: { onSignupSuccess?: () => void }) {
 
     try {
       if (isSignup) {
+        trackAnalyticsEvent("signup_started");
         const username = generatePlaceholderUsername(email);
         const parsed = registerSchema.safeParse({ email, username, password });
         if (!parsed.success) {

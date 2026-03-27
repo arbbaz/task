@@ -15,12 +15,24 @@ function randomId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
+let memorySessionId: string | null = null;
+
+function safeStorageGet(key: string): string | null {
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+
+function safeStorageSet(key: string, value: string): void {
+  try { window.localStorage.setItem(key, value); } catch { /* analytics must never crash the page */ }
+}
+
 function getOrCreateSessionId(): string {
   if (typeof window === "undefined") return randomId();
-  const existing = window.localStorage.getItem(SESSION_STORAGE_KEY);
+  const existing = safeStorageGet(SESSION_STORAGE_KEY);
   if (existing && /^[a-zA-Z0-9_-]{8,128}$/.test(existing)) return existing;
+  if (memorySessionId) return memorySessionId;
   const sessionId = randomId().replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 64);
-  window.localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
+  safeStorageSet(SESSION_STORAGE_KEY, sessionId);
+  memorySessionId = sessionId;
   return sessionId;
 }
 
@@ -37,7 +49,7 @@ function getPersistedUtm(): { utm_source?: string; utm_medium?: string; utm_camp
   if (typeof window === "undefined") return {};
   const fromUrl = getUtmParams();
   if (fromUrl.utm_source || fromUrl.utm_medium || fromUrl.utm_campaign) {
-    window.sessionStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(fromUrl));
+    try { window.sessionStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(fromUrl)); } catch { /* ignore */ }
     return fromUrl;
   }
   try {
@@ -49,16 +61,13 @@ function getPersistedUtm(): { utm_source?: string; utm_medium?: string; utm_camp
   }
 }
 
-function sendTrack(base: string, payload: Record<string, unknown>, preferBeacon = false): void {
+function sendTrack(base: string, payload: Record<string, unknown>): void {
   const body = JSON.stringify(payload);
-  if (preferBeacon && typeof navigator !== "undefined" && navigator.sendBeacon) {
-    navigator.sendBeacon(`${base}/api/analytics/track`, new Blob([body], { type: "application/json" }));
-    return;
-  }
   fetch(`${base}/api/analytics/track`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body,
+    credentials: "include",
     keepalive: true,
   }).catch(() => {});
 }
@@ -115,7 +124,7 @@ export default function AnalyticsTracker() {
         enteredAt: prevEntered,
         leftAt: now,
         consent: true,
-      }, true);
+      });
     }
 
     const enteredAt = now;
@@ -148,7 +157,7 @@ export default function AnalyticsTracker() {
         enteredAt: entered,
         leftAt,
         consent: true,
-      }, true);
+      });
     };
 
     const handleVisibility = () => {

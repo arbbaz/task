@@ -16,6 +16,7 @@ import ReviewScore from "@/features/reviews/components/ReviewScore";
 import { formatReviewTimeAgo, translateWithFallback } from "@/features/reviews/utils/reviewFormatting";
 import { reviewsApi } from "@/features/reviews/api/client";
 import { useVote } from "@/shared/hooks/useVote";
+import { trackAnalyticsEvent } from "@/shared/components/analytics/AnalyticsTracker";
 import { DotIcon } from "@/shared/components/ui/Icons";
 import type { Review } from "@/lib/types";
 
@@ -38,8 +39,11 @@ export default function ReviewCard({
     initialDownVoteCount: review.downVoteCount ?? 0,
     initialUserVote: review.userVote ?? null,
     voteRequest: reviewsApi.vote,
-    onSuccess: (nextHelpfulCount, nextDownVoteCount) => {
+    onSuccess: (nextHelpfulCount, nextDownVoteCount, voteType) => {
       onVoteUpdate?.(review.id, nextHelpfulCount, nextDownVoteCount);
+      if (voteType === "UP") {
+        trackAnalyticsEvent("like");
+      }
     },
   });
 
