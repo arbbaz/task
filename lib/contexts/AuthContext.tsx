@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { authApi } from "@/features/auth/api/client";
 import { useToast } from "@/lib/contexts/ToastContext";
@@ -41,7 +41,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-interface InitialAuth {
+export interface InitialAuth {
   isLoggedIn: boolean;
   user: UserProfile | null;
 }
@@ -52,30 +52,45 @@ function isNextAuthPending(status: string) {
 
 export function AuthProvider({
   children,
+  initialAuth,
 }: {
   children: React.ReactNode;
+  initialAuth?: InitialAuth | null;
 }) {
   const { data: session, status } = useSession();
-  const [fallbackAuth, setFallbackAuth] = useState<InitialAuth | null>(null);
-  const [hasResolvedFallback, setHasResolvedFallback] = useState(false);
+  const [fallbackAuth, setFallbackAuth] = useState<InitialAuth | null>(
+    initialAuth ?? null,
+  );
+  const [hasResolvedFallback, setHasResolvedFallback] = useState(
+    Boolean(initialAuth),
+  );
   const { showToast } = useToast();
+  const inFlightFallbackRef = useRef<Promise<void> | null>(null);
 
   const fetchFallbackAuth = useCallback(async () => {
-    try {
-      const response = await authApi.me();
-      setFallbackAuth({
-        isLoggedIn: !!response.data?.user,
-        user: response.data?.user ?? null,
-      });
-      if (response.error && !isAuthFailureMessage(response.error)) {
-        showToast(response.error, "error");
-      }
-    } finally {
-      setHasResolvedFallback(true);
+    if (!inFlightFallbackRef.current) {
+      inFlightFallbackRef.current = (async () => {
+        try {
+          const response = await authApi.me();
+          setFallbackAuth({
+            isLoggedIn: !!response.data?.user,
+            user: response.data?.user ?? null,
+          });
+          if (response.error && !isAuthFailureMessage(response.error)) {
+            showToast(response.error, "error");
+          }
+        } finally {
+          setHasResolvedFallback(true);
+          inFlightFallbackRef.current = null;
+        }
+      })();
     }
+
+    await inFlightFallbackRef.current;
   }, [showToast]);
 
   const refreshAuth = useCallback(async () => {
+    setHasResolvedFallback(false);
     await fetchFallbackAuth();
   }, [fetchFallbackAuth]);
 

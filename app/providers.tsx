@@ -3,15 +3,17 @@
 import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 import { ToastProvider } from "@/lib/contexts/ToastContext";
-import { AuthProvider } from "@/lib/contexts/AuthContext";
+import { AuthProvider, type InitialAuth } from "@/lib/contexts/AuthContext";
 import QueryProvider from "@/app/QueryProvider";
 
 export default function Providers({
   children,
   session,
+  initialAuth,
 }: {
   children: React.ReactNode;
   session?: Session | null;
+  initialAuth?: InitialAuth | null;
 }) {
   return (
     <SessionProvider
@@ -21,7 +23,7 @@ export default function Providers({
     >
       <QueryProvider>
         <ToastProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider initialAuth={initialAuth}>{children}</AuthProvider>
         </ToastProvider>
       </QueryProvider>
     </SessionProvider>

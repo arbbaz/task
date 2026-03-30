@@ -19,6 +19,7 @@ export function useHeaderSearch() {
   const searchRef = useRef<HTMLDivElement | null>(null);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestRequestIdRef = useRef(0);
+  const resultsCacheRef = useRef(new Map<string, SearchResults>());
 
   const clearSearch = useCallback(() => {
     latestRequestIdRef.current += 1;
@@ -30,10 +31,18 @@ export function useHeaderSearch() {
 
   const runSearch = useCallback(async (query: string) => {
     const term = query.trim();
-    if (!term) {
+    if (term.length < 2) {
       setSearchResults(EMPTY_RESULTS);
       setSearchLoading(false);
       setSearchOpen(false);
+      return;
+    }
+
+    const cached = resultsCacheRef.current.get(term.toLowerCase());
+    if (cached) {
+      setSearchResults(cached);
+      setSearchLoading(false);
+      setSearchOpen(true);
       return;
     }
 
@@ -49,10 +58,18 @@ export function useHeaderSearch() {
       }
 
       const results = response.data?.results;
-      setSearchResults({
+      const nextResults = {
         reviews: results?.reviews ?? [],
         users: results?.users ?? [],
-      });
+      };
+      resultsCacheRef.current.set(term.toLowerCase(), nextResults);
+      if (resultsCacheRef.current.size > 20) {
+        const oldestKey = resultsCacheRef.current.keys().next().value;
+        if (oldestKey) {
+          resultsCacheRef.current.delete(oldestKey);
+        }
+      }
+      setSearchResults(nextResults);
     } catch {
       if (latestRequestIdRef.current !== requestId) {
         return;
@@ -71,7 +88,7 @@ export function useHeaderSearch() {
       clearTimeout(searchDebounceRef.current);
     }
 
-    if (!searchQuery.trim()) {
+    if (searchQuery.trim().length < 2) {
       latestRequestIdRef.current += 1;
       setSearchResults(EMPTY_RESULTS);
       setSearchLoading(false);
