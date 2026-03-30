@@ -24,6 +24,20 @@ export interface ServerAuthResult {
   user: UserProfile | null;
 }
 
+export interface TrendingItem {
+  id: string;
+  name: string;
+  description: string;
+  likes: number;
+  averageScore: number;
+  reviewCount: number;
+}
+
+export interface ServerTrendingOverviewResult {
+  trendingNow: TrendingItem[];
+  topRatedThisWeek: TrendingItem[];
+}
+
 export async function getServerAuth(cookieHeader?: string): Promise<ServerAuthResult> {
   const base = getBackendUrl();
   if (!base) return { isLoggedIn: false, user: null };
@@ -48,6 +62,43 @@ export async function getServerAuth(cookieHeader?: string): Promise<ServerAuthRe
     return { isLoggedIn: false, user: null };
   }
 }
+
+export const getServerTrendingOverview = cache(
+  async (): Promise<ServerTrendingOverviewResult> => {
+    const base = getBackendUrl();
+    if (!base) {
+      return { trendingNow: [], topRatedThisWeek: [] };
+    }
+
+    try {
+      const params = new URLSearchParams({
+        period: "week",
+        limit: "3",
+      });
+      const res = await fetch(`${base}/api/trending?${params.toString()}`, {
+        cache: "force-cache",
+        next: {
+          revalidate: PUBLIC_FEED_REVALIDATE_SECONDS,
+          tags: ["trending-overview:week"],
+        },
+      });
+
+      if (!res.ok) {
+        return { trendingNow: [], topRatedThisWeek: [] };
+      }
+
+      const data = (await res.json()) as Partial<ServerTrendingOverviewResult>;
+      return {
+        trendingNow: Array.isArray(data?.trendingNow) ? data.trendingNow : [],
+        topRatedThisWeek: Array.isArray(data?.topRatedThisWeek)
+          ? data.topRatedThisWeek
+          : [],
+      };
+    } catch {
+      return { trendingNow: [], topRatedThisWeek: [] };
+    }
+  },
+);
 
 export interface ServerReviewsResult {
   reviews: Review[];
